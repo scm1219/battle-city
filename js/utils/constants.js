@@ -79,3 +79,9 @@ export const BRICK_DENSITY = 0.3; // 砖块密度30%
 export const STEEL_DENSITY = 0.05; // 钢块密度5%
 export const RIVER_DENSITY = 0.08; // 河流密度8%
 export const FOREST_DENSITY = 0.1; // 森林密度10%
+
+// 音频配置
+export const AUDIO_BGM_BPM = 160; // 背景音乐节拍速度
+export const AUDIO_BGM_VOLUME = 0.5; // 背景音乐音量 (0-1)
+export const AUDIO_SFX_VOLUME = 0.6; // 音效音量 (0-1)
+export const AUDIO_EXPLOSION_DURATION = 0.4; // 爆炸音效持续时间（秒）

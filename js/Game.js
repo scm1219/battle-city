@@ -9,6 +9,7 @@ import { InputManager } from './managers/InputManager.js';
 import { CollisionManager } from './managers/CollisionManager.js';
 import { SpawnManager } from './managers/SpawnManager.js';
 import { MapGenerator } from './managers/MapGenerator.js';
+import { AudioManager } from './managers/AudioManager.js';
 import { COLORS, SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, BENCHMARK_DURATION, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
 import { rectIntersect } from './utils/helpers.js';
 
@@ -22,6 +23,7 @@ export class Game {
     this.gameOver = false;
     this.dying = false;
     this.paused = false;
+    this.waitingForStart = false; // 等待玩家按空格开始
     this.score = 0;
     this.gameTime = 0;
     this.kills = { normal: 0, heavy: 0, fast: 0 };
@@ -36,6 +38,7 @@ export class Game {
     // 管理器
     this.input = new InputManager();
     this.spawnManager = new SpawnManager();
+    this.audio = new AudioManager();
 
     // UI元素
     this.scoreElement = document.getElementById('score');
@@ -61,6 +64,18 @@ export class Game {
 
     // 绑定重开事件
     window.addEventListener('keydown', (e) => {
+      // 首次交互时初始化音频
+      this.audio.init();
+
+      // 等待开始画面：按空格启动游戏
+      if (this.waitingForStart && e.code === 'Space') {
+        this.waitingForStart = false;
+        this.gameRunning = true;
+        this.lastTime = performance.now();
+        this.gameLoop(this.lastTime);
+        return;
+      }
+
       if (e.code === 'KeyR' && this.gameOver) {
         this.reset();
       }
@@ -72,6 +87,16 @@ export class Game {
     // 恢复按钮
     document.getElementById('resumeBtn').addEventListener('click', () => {
       if (this.paused) this.togglePause();
+    });
+
+    // 音乐开关按钮
+    this.audioToggleBtn = document.getElementById('audioToggle');
+    this.audioToggleBtn.addEventListener('click', () => {
+      this.audio.init(); // 确保已初始化
+      const enabled = this.audio.toggleBGM();
+      this.audioToggleBtn.classList.toggle('muted', !enabled);
+      this.audioToggleBtn.querySelector('.audio-label').textContent =
+        `音乐: ${enabled ? '开' : '关'}`;
     });
 
     // 初始化游戏
@@ -120,10 +145,8 @@ export class Game {
 
     console.log(`[Benchmark] 帧间隔: ${medianFrameTime.toFixed(2)}ms, 帧率: ~${fps}fps, 速度缩放: ${(TARGET_FRAME_TIME / medianFrameTime).toFixed(3)}`);
 
-    // 启动游戏循环
-    this.gameRunning = true;
-    this.lastTime = performance.now();
-    this.gameLoop(this.lastTime);
+    // 显示等待开始画面
+    this.showStartScreen();
   }
 
   /**
@@ -136,6 +159,45 @@ export class Game {
     this.ctx.font = '20px monospace';
     this.ctx.textAlign = 'center';
     this.ctx.fillText('正在校准...', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+  }
+
+  /**
+   * 显示等待开始画面
+   */
+  showStartScreen() {
+    this.waitingForStart = true;
+    this.ctx.fillStyle = COLORS.BACKGROUND;
+    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.ctx.fillStyle = COLORS.TEXT;
+    this.ctx.textAlign = 'center';
+
+    // 标题
+    this.ctx.font = 'bold 36px monospace';
+    this.ctx.fillText('坦克大战', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
+
+    // 闪烁提示
+    this._startScreenBlink();
+  }
+
+  /**
+   * 开始画面文字闪烁动画
+   */
+  _startScreenBlink() {
+    if (!this.waitingForStart) return;
+
+    const now = performance.now();
+    const visible = Math.floor(now / 600) % 2 === 0;
+
+    // 清除提示区域（不影响标题）
+    this.ctx.fillStyle = COLORS.BACKGROUND;
+    this.ctx.fillRect(0, CANVAS_HEIGHT / 2 - 10, CANVAS_WIDTH, 60);
+
+    this.ctx.fillStyle = visible ? '#00ff00' : '#004400';
+    this.ctx.font = '18px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('按 空格键 开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+
+    requestAnimationFrame(() => this._startScreenBlink());
   }
 
   /**
@@ -337,6 +399,7 @@ export class Game {
             enemy.y + enemy.height / 2
           );
           this.particles.push(...particles);
+          this.audio.playExplosion();
         }
       }
     }
@@ -357,6 +420,7 @@ export class Game {
           this.player.y + this.player.height / 2
         );
         this.particles.push(...particles);
+        this.audio.playExplosion();
 
         // 玩家死亡，等待爆炸结束后再结束游戏
       }
@@ -458,6 +522,7 @@ export class Game {
   endGame() {
     this.gameOver = true;
     this.gameRunning = false;
+    this.audio.stopBGM();
     this.finalScoreElement.textContent = this.score;
     this.gameOverElement.classList.remove('hidden');
     this.saveScore(this.score);
@@ -471,11 +536,13 @@ export class Game {
 
     if (this.paused) {
       // 进入伪装模式
+      this.audio.pause();
       this.gameContainer.classList.add('hidden');
       this.disguiseOverlay.classList.remove('hidden');
       document.title = 'index.js - tank-project - Visual Studio Code';
     } else {
       // 恢复游戏
+      this.audio.resume();
       this.disguiseOverlay.classList.add('hidden');
       this.gameContainer.classList.remove('hidden');
       document.title = this.originalTitle;
@@ -583,6 +650,7 @@ export class Game {
    */
   reset() {
     this.init();
+    this.audio.playBGM();
     this.start();
   }
 }

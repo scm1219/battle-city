@@ -204,6 +204,49 @@ body {
   color: #888;
 }
 
+/* 音乐开关按钮 */
+.audio-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.audio-toggle:hover {
+  background: rgba(0, 255, 0, 0.2);
+  border-color: #00ff00;
+}
+
+.audio-toggle.muted {
+  background: rgba(255, 60, 60, 0.1);
+  color: #ff4444;
+  border-color: #662222;
+}
+
+.audio-toggle.muted:hover {
+  background: rgba(255, 60, 60, 0.2);
+  border-color: #ff4444;
+}
+
+.audio-icon {
+  font-size: 16px;
+}
+
+.audio-label {
+  font-size: 12px;
+}
+
 /* 历史得分榜 */
 .scoreboard {
   background: rgba(0, 0, 0, 0.5);
