@@ -23,7 +23,7 @@ body {
   padding: 20px;
 }
 
-/* 左侧面板 */
+/* 侧面板通用样式 */
 .side-panel {
   display: flex;
   flex-direction: column;
@@ -224,7 +224,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 320px;
+  max-height: 680px;
   overflow-y: auto;
 }
 
@@ -242,6 +242,18 @@ body {
   color: #666;
   text-align: center;
   padding: 10px 0;
+}
+
+.scoreboard-empty-row {
+  opacity: 0.3;
+}
+
+.scoreboard-empty-row .scoreboard-rank {
+  color: #555;
+}
+
+.scoreboard-empty-row .scoreboard-score {
+  color: #444;
 }
 
 .scoreboard-row {

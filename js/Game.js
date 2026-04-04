@@ -547,6 +547,7 @@ export class Game {
   renderScoreboard() {
     const STORAGE_KEY = 'tank_scoreboard';
     const RANK_LABELS = ['1st', '2nd', '3rd'];
+    const MAX_ROWS = 20;
 
     let records = [];
     try {
@@ -555,20 +556,26 @@ export class Game {
       records = [];
     }
 
-    if (records.length === 0) {
-      this.scoreboardList.innerHTML = '<p class="scoreboard-empty">暂无记录</p>';
-      return;
+    let html = '';
+    for (let i = 0; i < MAX_ROWS; i++) {
+      if (i < records.length) {
+        const record = records[i];
+        const rankClass = i < 3 ? ` rank-${i + 1}` : '';
+        const rankText = i < 3 ? RANK_LABELS[i] : `${i + 1}`;
+        html += `<div class="scoreboard-row${rankClass}">
+          <span class="scoreboard-rank">${rankText}</span>
+          <span class="scoreboard-score">${record.score}</span>
+          <span class="scoreboard-date">${record.date}</span>
+        </div>`;
+      } else {
+        html += `<div class="scoreboard-row scoreboard-empty-row">
+          <span class="scoreboard-rank">${i + 1}</span>
+          <span class="scoreboard-score">---</span>
+          <span class="scoreboard-date"></span>
+        </div>`;
+      }
     }
-
-    this.scoreboardList.innerHTML = records.map((record, index) => {
-      const rankClass = index < 3 ? ` rank-${index + 1}` : '';
-      const rankText = index < 3 ? RANK_LABELS[index] : `${index + 1}`;
-      return `<div class="scoreboard-row${rankClass}">
-        <span class="scoreboard-rank">${rankText}</span>
-        <span class="scoreboard-score">${record.score}</span>
-        <span class="scoreboard-date">${record.date}</span>
-      </div>`;
-    }).join('');
+    this.scoreboardList.innerHTML = html;
   }
 
   /**

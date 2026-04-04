@@ -48,14 +48,6 @@
         </div>
       </div>
 
-      <!-- 历史得分榜 -->
-      <div class="scoreboard">
-        <p class="scoreboard-title">历史得分榜</p>
-        <div id="scoreboardList" class="scoreboard-list">
-          <p class="scoreboard-empty">暂无记录</p>
-        </div>
-      </div>
-
       <!-- 操作说明 -->
       <div class="controls">
         <p class="controls-title">操作说明</p>
@@ -92,7 +84,7 @@
       </div>
     </div>
 
-    <!-- 右侧游戏区域 -->
+    <!-- 中间游戏区域 -->
     <div class="game-area">
       <canvas id="gameCanvas" width="680" height="680"></canvas>
 
@@ -101,6 +93,17 @@
         <h2>游戏结束</h2>
         <p class="final-score">最终得分: <span id="finalScore">0</span></p>
         <p class="instruction">按 R 键重新开始</p>
+      </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div class="side-panel right-panel">
+      <!-- 历史得分榜 -->
+      <div class="scoreboard">
+        <p class="scoreboard-title">历史得分榜</p>
+        <div id="scoreboardList" class="scoreboard-list">
+          <p class="scoreboard-empty">暂无记录</p>
+        </div>
       </div>
     </div>
   </div>
