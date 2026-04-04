@@ -1,0 +1,81 @@
+// 敌人生成管理器
+import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE } from '../utils/constants.js';
+import { randomInt } from '../utils/helpers.js';
+
+export class SpawnManager {
+  constructor() {
+    this.lastSpawnTime = 0;
+    this.currentInterval = SPAWN_INTERVAL_INITIAL;
+    this.gameStartTime = Date.now();
+  }
+
+  /**
+   * 判断是否应该生成敌人
+   */
+  shouldSpawn() {
+    const now = Date.now();
+    const elapsed = now - this.lastSpawnTime;
+
+    if (elapsed >= this.currentInterval) {
+      this.lastSpawnTime = now;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 生成敌人
+   * @param {Array} enemies - 当前敌人列表，用于检查生成点拥挤度
+   */
+  spawnEnemy(enemies = []) {
+    // 更新难度（随时间缩短生成间隔）
+    this.updateDifficulty();
+
+    // 统计每个生成点附近的敌人数量
+    const availablePoints = SPAWN_POINTS.filter(point => {
+      const px = point.x * GRID_SIZE + (GRID_SIZE - 36) / 2;
+      const py = point.y * GRID_SIZE + (GRID_SIZE - 36) / 2;
+      const nearby = enemies.filter(e =>
+        Math.abs(e.x - px) < GRID_SIZE && Math.abs(e.y - py) < GRID_SIZE
+      );
+      return nearby.length < 2;
+    });
+
+    if (availablePoints.length === 0) return null;
+
+    // 随机选择一个可用生成点
+    const spawnPoint = availablePoints[randomInt(0, availablePoints.length - 1)];
+
+    // 转换为像素坐标（居中）
+    const x = spawnPoint.x * GRID_SIZE + (GRID_SIZE - 36) / 2;
+    const y = spawnPoint.y * GRID_SIZE + (GRID_SIZE - 36) / 2;
+
+    return { x, y };
+  }
+
+  /**
+   * 更新难度（根据游戏时间）
+   */
+  updateDifficulty() {
+    const elapsed = Date.now() - this.gameStartTime;
+    const seconds = Math.floor(elapsed / 1000);
+
+    // 难度曲线
+    if (seconds < 30) {
+      this.currentInterval = SPAWN_INTERVAL_INITIAL; // 3秒
+    } else if (seconds < 60) {
+      this.currentInterval = 2000; // 2秒
+    } else {
+      this.currentInterval = SPAWN_INTERVAL_MIN; // 1秒
+    }
+  }
+
+  /**
+   * 重置生成器
+   */
+  reset() {
+    this.lastSpawnTime = 0;
+    this.currentInterval = SPAWN_INTERVAL_INITIAL;
+    this.gameStartTime = Date.now();
+  }
+}

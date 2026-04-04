@@ -1,0 +1,333 @@
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
+/* 游戏容器 - 水平布局 */
+.game-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* 左侧面板 */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 180px;
+}
+
+/* 信息面板 */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00ff00;
+}
+
+/* 右侧游戏区域 */
+.game-area {
+  position: relative;
+}
+
+/* 游戏画布 */
+#gameCanvas {
+  border: 3px solid #555;
+  background: #000;
+  display: block;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+/* 游戏结束画面 */
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  padding: 40px 60px;
+  border-radius: 10px;
+  border: 3px solid #ff0000;
+  text-align: center;
+  z-index: 100;
+}
+
+.game-over h2 {
+  font-size: 36px;
+  color: #ff0000;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);
+}
+
+.final-score {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.final-score span {
+  color: #00ff00;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.instruction {
+  font-size: 16px;
+  color: #aaa;
+}
+
+/* 操作说明 */
+.controls {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+/* 击毁统计 */
+.kill-stats {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+.kill-stats-title {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.kill-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kill-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.kill-label {
+  font-size: 12px;
+  color: #888;
+  flex: 1;
+}
+
+.kill-count {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ff00;
+}
+
+.controls-title {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.controls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-row kbd {
+  display: inline-block;
+  min-width: 55px;
+  padding: 3px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #444;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.control-row span {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 历史得分榜 */
+.scoreboard {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+.scoreboard-title {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.scoreboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.scoreboard-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scoreboard-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 2px;
+}
+
+.scoreboard-empty {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.scoreboard-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.scoreboard-rank {
+  width: 20px;
+  font-weight: bold;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.scoreboard-score {
+  flex: 1;
+  font-weight: bold;
+  color: #00ff00;
+}
+
+.scoreboard-date {
+  color: #666;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* 前三名特殊样式 */
+.scoreboard-row.rank-1 {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.scoreboard-row.rank-1 .scoreboard-rank {
+  color: #FFD700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+.scoreboard-row.rank-1 .scoreboard-score {
+  color: #FFD700;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+}
+
+.scoreboard-row.rank-2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.12), transparent);
+  border: 1px solid rgba(192, 192, 192, 0.25);
+}
+
+.scoreboard-row.rank-2 .scoreboard-rank {
+  color: #C0C0C0;
+  text-shadow: 0 0 6px rgba(192, 192, 192, 0.5);
+}
+
+.scoreboard-row.rank-2 .scoreboard-score {
+  color: #C0C0C0;
+}
+
+.scoreboard-row.rank-3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.12), transparent);
+  border: 1px solid rgba(205, 127, 50, 0.25);
+}
+
+.scoreboard-row.rank-3 .scoreboard-rank {
+  color: #CD7F32;
+  text-shadow: 0 0 6px rgba(205, 127, 50, 0.5);
+}
+
+.scoreboard-row.rank-3 .scoreboard-score {
+  color: #CD7F32;
+}
+
+/* 工具类 */
+.hidden {
+  display: none !important;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.game-over:not(.hidden) {
+  animation: pulse 2s ease-in-out infinite;
+}

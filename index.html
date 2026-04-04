@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>坦克大战 - Battle City</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="game-container">
+    <!-- 左侧面板 -->
+    <div class="side-panel">
+      <!-- 计分板 -->
+      <div class="info-panel">
+        <div class="info-item">
+          <span class="label">分数:</span>
+          <span id="score" class="value">0</span>
+        </div>
+        <div class="info-item">
+          <span class="label">时间:</span>
+          <span id="time" class="value">0</span>
+        </div>
+        <div class="info-item">
+          <span class="label">敌人:</span>
+          <span id="enemies" class="value">0</span>
+        </div>
+      </div>
+
+      <!-- 击毁统计 -->
+      <div class="kill-stats">
+        <p class="kill-stats-title">击毁统计</p>
+        <div class="kill-stats-list">
+          <div class="kill-row">
+            <span class="kill-icon" style="background:#FF0000;"></span>
+            <span class="kill-label">普通</span>
+            <span id="killNormal" class="kill-count">0</span>
+          </div>
+          <div class="kill-row">
+            <span class="kill-icon" style="background:#00CC00;"></span>
+            <span class="kill-label">重装</span>
+            <span id="killHeavy" class="kill-count">0</span>
+          </div>
+          <div class="kill-row">
+            <span class="kill-icon" style="background:#FF69B4;"></span>
+            <span class="kill-label">快速</span>
+            <span id="killFast" class="kill-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 历史得分榜 -->
+      <div class="scoreboard">
+        <p class="scoreboard-title">历史得分榜</p>
+        <div id="scoreboardList" class="scoreboard-list">
+          <p class="scoreboard-empty">暂无记录</p>
+        </div>
+      </div>
+
+      <!-- 操作说明 -->
+      <div class="controls">
+        <p class="controls-title">操作说明</p>
+        <div class="controls-grid">
+          <div class="control-row">
+            <kbd>W</kbd>
+            <span>向上</span>
+          </div>
+          <div class="control-row">
+            <kbd>A</kbd>
+            <span>向左</span>
+          </div>
+          <div class="control-row">
+            <kbd>S</kbd>
+            <span>向下</span>
+          </div>
+          <div class="control-row">
+            <kbd>D</kbd>
+            <span>向右</span>
+          </div>
+          <div class="control-row">
+            <kbd>Space</kbd>
+            <span>发射</span>
+          </div>
+          <div class="control-row">
+            <kbd>R</kbd>
+            <span>重开</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧游戏区域 -->
+    <div class="game-area">
+      <canvas id="gameCanvas" width="680" height="680"></canvas>
+
+      <!-- 游戏结束画面 -->
+      <div id="gameOver" class="game-over hidden">
+        <h2>游戏结束</h2>
+        <p class="final-score">最终得分: <span id="finalScore">0</span></p>
+        <p class="instruction">按 R 键重新开始</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/Game.js"></script>
+</body>
+</html>
