@@ -331,3 +331,401 @@ body {
 .game-over:not(.hidden) {
   animation: pulse 2s ease-in-out infinite;
 }
+
+/* ===== VS Code 伪装层 ===== */
+.disguise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #cccccc;
+  user-select: none;
+}
+
+/* 标题栏 */
+.vscode-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  background: #323233;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.vscode-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 8px;
+}
+
+.vscode-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.vscode-menu-item {
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: default;
+  color: #cccccc;
+  font-size: 12.5px;
+}
+
+.vscode-menu-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.vscode-titlebar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #999;
+}
+
+.vscode-titlebar-right {
+  display: flex;
+  align-items: center;
+}
+
+.vscode-win-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 30px;
+  font-size: 14px;
+  cursor: default;
+  color: #999;
+}
+
+.vscode-win-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.vscode-win-close:hover {
+  background: #e81123 !important;
+  color: #fff !important;
+}
+
+/* 主体区域 */
+.vscode-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 活动栏 */
+.vscode-activity-bar {
+  width: 48px;
+  background: #333333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.vscode-activity-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #858585;
+  cursor: pointer;
+  position: relative;
+}
+
+.vscode-activity-icon:hover {
+  color: #cccccc;
+}
+
+.vscode-activity-icon.active {
+  color: #ffffff;
+}
+
+.vscode-activity-icon.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: #ffffff;
+  border-radius: 0 1px 1px 0;
+}
+
+/* 侧边栏 */
+.vscode-sidebar {
+  width: 200px;
+  background: #252526;
+  flex-shrink: 0;
+  font-size: 13px;
+  overflow-y: auto;
+}
+
+.vscode-sidebar-header {
+  padding: 10px 20px;
+  font-size: 11px;
+  color: #bbbbbb;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.vscode-tree-section {
+  padding: 0 8px;
+}
+
+.vscode-tree-title {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cccccc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vscode-tree-item {
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vscode-tree-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.vscode-tree-item.indent {
+  padding-left: 28px;
+}
+
+.vscode-arrow {
+  font-size: 10px;
+  color: #999;
+}
+
+.vscode-folder-icon {
+  font-size: 14px;
+}
+
+.vscode-file-icon {
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 3px;
+  border-radius: 3px;
+  margin-right: 2px;
+  font-family: monospace;
+}
+
+.vscode-file-icon.js { background: #f1e05a; color: #000; }
+.vscode-file-icon.json { background: #9c9c9c; color: #fff; font-size: 8px; }
+.vscode-file-icon.md { background: #083fa1; color: #fff; font-size: 8px; }
+
+/* 编辑器区域 */
+.vscode-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* 标签页 */
+.vscode-tabs {
+  display: flex;
+  background: #252526;
+  height: 35px;
+  flex-shrink: 0;
+}
+
+.vscode-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  font-size: 13px;
+  color: #969696;
+  background: #2d2d2d;
+  border-right: 1px solid #252526;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vscode-tab.active {
+  background: #1e1e1e;
+  color: #ffffff;
+  border-top: 1px solid #007acc;
+}
+
+.vscode-tab-icon {
+  font-size: 8px;
+  font-weight: bold;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.vscode-tab-icon.js { background: #f1e05a; color: #000; }
+
+.vscode-tab-close {
+  margin-left: 8px;
+  font-size: 16px;
+  color: #666;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.vscode-tab-close:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* 代码区 */
+.vscode-code-area {
+  flex: 1;
+  display: flex;
+  overflow: auto;
+  background: #1e1e1e;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.vscode-line-numbers {
+  padding: 8px 16px 8px 24px;
+  text-align: right;
+  color: #858585;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.vscode-code-content {
+  padding: 8px 16px;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.vscode-code-content pre {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.vs-kw { color: #569cd6; }
+.vs-fn { color: #dcdcaa; }
+.vs-str { color: #ce9178; }
+.vs-num { color: #b5cea8; }
+.vs-cmt { color: #6a9955; }
+.vs-prop { color: #9cdcfe; }
+
+/* 小地图 */
+.vscode-minimap {
+  width: 60px;
+  background: #1e1e1e;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.vscode-minimap::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  right: 8px;
+  bottom: 10px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.06) 0px,
+      rgba(255,255,255,0.06) 2px,
+      transparent 2px,
+      transparent 6px
+    );
+}
+
+/* 状态栏 */
+.vscode-statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 22px;
+  background: #007acc;
+  font-size: 12px;
+  color: #ffffff;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.vscode-statusbar-left,
+.vscode-statusbar-right {
+  display: flex;
+  gap: 16px;
+}
+
+/* 恢复提示 */
+.vscode-restore-hint {
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  background: rgba(0,0,0,0.85);
+  color: #888;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  opacity: 0;
+  animation: vs-hint-fade 4s ease-in-out 1s forwards;
+  pointer-events: none;
+}
+
+.vscode-restore-hint kbd {
+  background: #333;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid #555;
+  font-size: 11px;
+  color: #ccc;
+}
+
+.restore-x-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #444;
+  border-radius: 3px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+@keyframes vs-hint-fade {
+  0% { opacity: 0; transform: translateY(10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}

@@ -2,6 +2,7 @@
 export class InputManager {
   constructor() {
     this.keys = new Set();
+    this.onEscToggle = null;
     this.init();
   }
 
@@ -11,9 +12,13 @@ export class InputManager {
   init() {
     window.addEventListener('keydown', (e) => {
       this.keys.add(e.code);
-      // 防止方向键滚动页面
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+      // 防止方向键和 ESC 滚动页面
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Escape'].includes(e.code)) {
         e.preventDefault();
+      }
+      // ESC 暂停/恢复回调
+      if (e.code === 'Escape' && this.onEscToggle) {
+        this.onEscToggle();
       }
     });
 

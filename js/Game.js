@@ -21,6 +21,7 @@ export class Game {
     this.gameRunning = false;
     this.gameOver = false;
     this.dying = false;
+    this.paused = false;
     this.score = 0;
     this.gameTime = 0;
     this.kills = { normal: 0, heavy: 0, fast: 0 };
@@ -49,6 +50,11 @@ export class Game {
     };
     this.scoreboardList = document.getElementById('scoreboardList');
 
+    // 伪装层
+    this.disguiseOverlay = document.getElementById('disguiseOverlay');
+    this.gameContainer = document.querySelector('.game-container');
+    this.originalTitle = document.title;
+
     // 时间追踪
     this.lastTime = 0;
     this.timeAccumulator = 0;
@@ -58,6 +64,14 @@ export class Game {
       if (e.code === 'KeyR' && this.gameOver) {
         this.reset();
       }
+    });
+
+    // ESC 暂停/恢复
+    this.input.onEscToggle = () => this.togglePause();
+
+    // 恢复按钮
+    document.getElementById('resumeBtn').addEventListener('click', () => {
+      if (this.paused) this.togglePause();
     });
 
     // 初始化游戏
@@ -160,7 +174,13 @@ export class Game {
    * 游戏主循环
    */
   gameLoop(currentTime) {
-    if (!this.gameRunning) return;
+    if (!this.gameRunning && !this.paused) return;
+
+    // 暂停时保持 rAF 循环但不更新
+    if (this.paused) {
+      requestAnimationFrame((time) => this.gameLoop(time));
+      return;
+    }
 
     const deltaTime = currentTime - this.lastTime;
     this.lastTime = currentTime;
@@ -441,6 +461,30 @@ export class Game {
     this.finalScoreElement.textContent = this.score;
     this.gameOverElement.classList.remove('hidden');
     this.saveScore(this.score);
+  }
+
+  /**
+   * 切换暂停/恢复（伪装模式）
+   */
+  togglePause() {
+    this.paused = !this.paused;
+
+    if (this.paused) {
+      // 进入伪装模式
+      this.gameContainer.classList.add('hidden');
+      this.disguiseOverlay.classList.remove('hidden');
+      document.title = 'index.js - tank-project - Visual Studio Code';
+    } else {
+      // 恢复游戏
+      this.disguiseOverlay.classList.add('hidden');
+      this.gameContainer.classList.remove('hidden');
+      document.title = this.originalTitle;
+      // 游戏进行中恢复时重置时间并清空按键
+      if (!this.gameOver) {
+        this.lastTime = performance.now();
+        this.input.clear();
+      }
+    }
   }
 
   /**

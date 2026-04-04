@@ -84,6 +84,10 @@
             <kbd>R</kbd>
             <span>重开</span>
           </div>
+          <div class="control-row">
+            <kbd>ESC</kbd>
+            <span>暂停</span>
+          </div>
         </div>
       </div>
     </div>
@@ -98,6 +102,162 @@
         <p class="final-score">最终得分: <span id="finalScore">0</span></p>
         <p class="instruction">按 R 键重新开始</p>
       </div>
+    </div>
+  </div>
+
+  <!-- VS Code 伪装层 -->
+  <div id="disguiseOverlay" class="disguise-overlay hidden">
+    <!-- 标题栏 -->
+    <div class="vscode-titlebar">
+      <div class="vscode-titlebar-left">
+        <div class="vscode-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path fill="#007acc" d="M1.5 1H6l2 2 2-2h4.5a.5.5 0 01.5.5v13a.5.5 0 01-.5.5H1.5a.5.5 0 01-.5-.5v-13a.5.5 0 01.5-.5z"/></svg>
+        </div>
+        <span class="vscode-menu-item">File</span>
+        <span class="vscode-menu-item">Edit</span>
+        <span class="vscode-menu-item">Selection</span>
+        <span class="vscode-menu-item">View</span>
+        <span class="vscode-menu-item">Go</span>
+        <span class="vscode-menu-item">Run</span>
+        <span class="vscode-menu-item">Terminal</span>
+        <span class="vscode-menu-item">Help</span>
+      </div>
+      <div class="vscode-titlebar-center">index.js - tank-project - Visual Studio Code</div>
+      <div class="vscode-titlebar-right">
+        <span class="vscode-win-btn">_</span>
+        <span class="vscode-win-btn">□</span>
+        <span class="vscode-win-btn vscode-win-close">×</span>
+      </div>
+    </div>
+    <!-- 主体 -->
+    <div class="vscode-body">
+      <!-- 活动栏 -->
+      <div class="vscode-activity-bar">
+        <div class="vscode-activity-icon active" title="资源管理器">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 0h-9L7 1.5V6H2.5L1 7.5v15.07L2.5 24h12.07L16 22.57V18h4.7l1.3-1.43V4.5L17.5 0zm0 2.12l2.38 2.38H17.5V2.12zm-3 20.38h-12v-15H7v9.07L8.5 18h6v4.5zm6-6h-12v-15H16V6h4.5v10.5z"/></svg>
+        </div>
+        <div class="vscode-activity-icon" title="搜索">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15.25 0a8.25 8.25 0 00-6.18 13.72L1 21.79l1.42 1.42 8.07-8.07A8.25 8.25 0 1015.25.01V0zm0 14.5a6.25 6.25 0 110-12.5 6.25 6.25 0 010 12.5z"/></svg>
+        </div>
+        <div class="vscode-activity-icon" title="源代码管理">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21.007 8.222A3.738 3.738 0 0015.045 5.2a3.737 3.737 0 001.156 6.583 2.988 2.988 0 01-2.668 1.67h-2.99a4.456 4.456 0 00-2.989 1.165V7.519a3.737 3.737 0 10-1.494 0v8.962a3.737 3.737 0 101.494 0v-.437a2.988 2.988 0 012.989-2.992h2.99a4.456 4.456 0 004.474-4.085 3.737 3.737 0 002.995-1.666v-.001zM6.56 4.5a2.244 2.244 0 11-2.245 2.245A2.244 2.244 0 016.56 4.5zm0 15a2.244 2.244 0 11-2.245-2.248A2.244 2.244 0 016.56 19.5zm10.82-10.5a2.244 2.244 0 112.245-2.248A2.244 2.244 0 0117.38 9z"/></svg>
+        </div>
+        <div class="vscode-activity-icon" title="运行和调试">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10.94 13.5l-1.32 1.32a3.73 3.73 0 00-7.24 0L1.06 13.5 0 14.56l1.72 1.72-.22.22V18H0v1.5h1.5v.08c.077.489.214.966.41 1.42L.47 22.44 1.53 23.5l1.34-1.34A3.73 3.73 0 005.5 23.5a3.73 3.73 0 002.63-1.34l1.34 1.34 1.06-1.06-1.44-1.44c.198-.454.335-.931.41-1.42v-.08H11V18H9.5v-1.5l-.22-.22L11 14.56l-1.06-1.06zM6.5 20.5a2.25 2.25 0 110-4.5 2.25 2.25 0 010 4.5zM23.5 7.5l-10-6v12l10-6z"/></svg>
+        </div>
+        <div class="vscode-activity-icon" title="扩展">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 1.5L15 0h7.5L24 1.5V9l-1.5 1.5H15L13.5 9V1.5zm1.5 0V9h7.5V1.5H15zM0 15L1.5 13.5H9L10.5 15v7.5L9 24H1.5L0 22.5V15zm1.5 0v7.5H9V15H1.5zM13.5 15L15 13.5h7.5L24 15v7.5L22.5 24H15l-1.5-1.5V15zm1.5 0v7.5h7.5V15H15zM0 1.5L1.5 0H9l1.5 1.5V9L9 10.5H1.5L0 9V1.5zm1.5 0V9H9V1.5H1.5z"/></svg>
+        </div>
+      </div>
+      <!-- 侧边栏 -->
+      <div class="vscode-sidebar">
+        <div class="vscode-sidebar-header">EXPLORER</div>
+        <div class="vscode-tree-section">
+          <div class="vscode-tree-title">TANK-PROJECT</div>
+          <div class="vscode-tree-item">
+            <span class="vscode-arrow">▾</span>
+            <span class="vscode-folder-icon">📁</span> src
+          </div>
+          <div class="vscode-tree-item indent">
+            <span class="vscode-file-icon js">JS</span> index.js
+          </div>
+          <div class="vscode-tree-item indent">
+            <span class="vscode-file-icon js">JS</span> engine.js
+          </div>
+          <div class="vscode-tree-item indent">
+            <span class="vscode-file-icon json">{}</span> config.json
+          </div>
+          <div class="vscode-tree-item">
+            <span class="vscode-arrow">▸</span>
+            <span class="vscode-folder-icon">📁</span> assets
+          </div>
+          <div class="vscode-tree-item">
+            <span class="vscode-arrow">▸</span>
+            <span class="vscode-folder-icon">📁</span> tests
+          </div>
+          <div class="vscode-tree-item">
+            <span class="vscode-file-icon md">M↓</span> README.md
+          </div>
+          <div class="vscode-tree-item">
+            <span class="vscode-file-icon json">{}</span> package.json
+          </div>
+        </div>
+      </div>
+      <!-- 编辑器区域 -->
+      <div class="vscode-editor">
+        <!-- 标签页 -->
+        <div class="vscode-tabs">
+          <div class="vscode-tab active">
+            <span class="vscode-tab-icon js">JS</span>
+            index.js
+            <span class="vscode-tab-close" id="resumeBtn" title="点击恢复游戏">×</span>
+          </div>
+          <div class="vscode-tab">
+            <span class="vscode-tab-icon js">JS</span>
+            engine.js
+          </div>
+        </div>
+        <!-- 代码区 -->
+        <div class="vscode-code-area">
+          <div class="vscode-line-numbers">
+            <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div>
+            <div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+            <div>11</div><div>12</div><div>13</div><div>14</div><div>15</div>
+            <div>16</div><div>17</div><div>18</div><div>19</div><div>20</div>
+            <div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
+            <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div>
+          </div>
+          <div class="vscode-code-content">
+            <pre><span class="vs-kw">const</span> <span class="vs-fn">express</span> = <span class="vs-fn">require</span>(<span class="vs-str">'express'</span>);
+<span class="vs-kw">const</span> app = <span class="vs-fn">express</span>();
+<span class="vs-kw">const</span> PORT = <span class="vs-num">3000</span>;
+
+<span class="vs-cmt">// 中间件配置</span>
+app.<span class="vs-fn">use</span>(express.<span class="vs-fn">json</span>());
+
+<span class="vs-cmt">// 路由定义</span>
+app.<span class="vs-fn">get</span>(<span class="vs-str">'/api/status'</span>, (req, res) => {
+  res.<span class="vs-fn">json</span>({ <span class="vs-prop">status</span>: <span class="vs-str">'running'</span>, <span class="vs-prop">uptime</span>: process.<span class="vs-fn">uptime</span>() });
+});
+
+app.<span class="vs-fn">get</span>(<span class="vs-str">'/api/data'</span>, (req, res) => {
+  <span class="vs-kw">const</span> { page = <span class="vs-num">1</span>, limit = <span class="vs-num">10</span> } = req.query;
+  <span class="vs-kw">const</span> data = <span class="vs-fn">getData</span>(page, limit);
+  res.<span class="vs-fn">json</span>({ data, <span class="vs-prop">total</span>: data.length });
+});
+
+<span class="vs-cmt">// 错误处理</span>
+app.<span class="vs-fn">use</span>((err, req, res, next) => {
+  console.<span class="vs-fn">error</span>(err.stack);
+  res.<span class="vs-fn">status</span>(<span class="vs-num">500</span>).<span class="vs-fn">json</span>({ <span class="vs-prop">error</span>: err.message });
+});
+
+app.<span class="vs-fn">listen</span>(PORT, () => {
+  console.<span class="vs-fn">log</span>(<span class="vs-str">`Server running on port </span><span class="vs-kw">${</span>PORT<span class="vs-kw">}</span><span class="vs-str">`</span>);
+});</pre>
+          </div>
+        </div>
+        <!-- 小地图 -->
+        <div class="vscode-minimap"></div>
+      </div>
+    </div>
+    <!-- 状态栏 -->
+    <div class="vscode-statusbar">
+      <div class="vscode-statusbar-left">
+        <span>⎇ main</span>
+        <span>✓ 0 ✕ 0</span>
+      </div>
+      <div class="vscode-statusbar-right">
+        <span>Ln 1, Col 1</span>
+        <span>Spaces: 2</span>
+        <span>UTF-8</span>
+        <span>JavaScript</span>
+        <span>Prettier</span>
+      </div>
+    </div>
+    <!-- 底部恢复提示 -->
+    <div class="vscode-restore-hint">
+      按 <kbd>ESC</kbd> 或点击标签页 <span class="restore-x-btn">×</span> 恢复
     </div>
   </div>
 
