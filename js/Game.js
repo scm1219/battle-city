@@ -5,11 +5,13 @@ import { HeavyEnemy } from './entities/HeavyEnemy.js';
 import { FastEnemy } from './entities/FastEnemy.js';
 import { Bullet } from './entities/Bullet.js';
 import { Particle } from './entities/Particle.js';
+import { PowerUp } from './entities/PowerUp.js';
 import { InputManager } from './managers/InputManager.js';
 import { CollisionManager } from './managers/CollisionManager.js';
 import { SpawnManager } from './managers/SpawnManager.js';
 import { MapGenerator } from './managers/MapGenerator.js';
 import { AudioManager } from './managers/AudioManager.js';
+import { PowerUpManager } from './managers/PowerUpManager.js';
 import { COLORS, SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, BENCHMARK_DURATION, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
 import { rectIntersect } from './utils/helpers.js';
 
@@ -34,6 +36,10 @@ export class Game {
     this.bullets = [];
     this.particles = [];
     this.obstacles = [];
+    this.powerUps = [];
+
+    // 道具生成计时
+    this.lastPowerUpSpawnTime = Date.now();
 
     // 管理器
     this.input = new InputManager();
@@ -118,6 +124,10 @@ export class Game {
     this.enemies = [];
     this.bullets = [];
     this.particles = [];
+    this.powerUps = [];
+
+    // 重置道具生成计时
+    this.lastPowerUpSpawnTime = Date.now();
 
     // 重置状态
     this.score = 0;
@@ -329,6 +339,25 @@ export class Game {
     // 更新粒子
     this.particles.forEach(particle => particle.update(deltaTime));
 
+    // 道具生成
+    if (PowerUpManager.shouldSpawn(this.powerUps, this.lastPowerUpSpawnTime)) {
+      const powerUp = PowerUpManager.createPowerUp(this.obstacles, this.player, this.enemies);
+      if (powerUp) {
+        this.powerUps.push(powerUp);
+        this.lastPowerUpSpawnTime = Date.now();
+      }
+    }
+
+    // 更新道具生命周期
+    this.powerUps.forEach(pu => pu.update(deltaTime));
+
+    // 玩家拾取道具
+    const pickedPowerUp = CollisionManager.checkPlayerPowerUp(this.player, this.powerUps);
+    if (pickedPowerUp) {
+      this.player.applyPowerUp(pickedPowerUp);
+      pickedPowerUp.markedForDeletion = true;
+    }
+
     // 碰撞检测
     this.handleCollisions();
 
@@ -411,6 +440,11 @@ export class Game {
 
       const player = CollisionManager.checkBulletTanks(bullet, [this.player]);
       if (player) {
+        // 无敌状态下子弹被弹开，不造成伤害
+        if (this.player.invincible) {
+          bullet.markedForDeletion = true;
+          continue;
+        }
         bullet.markedForDeletion = true;
         this.player.markedForDeletion = true;
 
@@ -459,6 +493,9 @@ export class Game {
 
     // 清理死亡的粒子
     this.particles = this.particles.filter(p => !p.isDead());
+
+    // 清理消失的道具
+    this.powerUps = this.powerUps.filter(p => !p.markedForDeletion);
   }
 
   /**
@@ -502,6 +539,9 @@ export class Game {
 
     // 绘制子弹
     this.bullets.forEach(bullet => bullet.draw(this.ctx));
+
+    // 绘制道具
+    this.powerUps.forEach(powerUp => powerUp.draw(this.ctx));
 
     // 绘制粒子
     this.particles.forEach(particle => particle.draw(this.ctx));

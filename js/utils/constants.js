@@ -55,7 +55,10 @@ export const COLORS = {
   RIVER: '#1E90FF',
   FOREST: '#228B22',
   BACKGROUND: '#000000',
-  TEXT: '#FFFFFF'
+  TEXT: '#FFFFFF',
+  POWERUP_SPEED: '#00FF00',
+  POWERUP_FIRERATE: '#FF4500',
+  POWERUP_SHIELD: '#00BFFF'
 };
 
 // 游戏配置
@@ -79,6 +82,15 @@ export const BRICK_DENSITY = 0.3; // 砖块密度30%
 export const STEEL_DENSITY = 0.05; // 钢块密度5%
 export const RIVER_DENSITY = 0.08; // 河流密度8%
 export const FOREST_DENSITY = 0.1; // 森林密度10%
+
+// 道具配置
+export const POWERUP_SIZE = 32;                          // 道具尺寸
+export const POWERUP_TYPES = ['speed', 'fireRate', 'shield']; // 道具类型
+export const POWERUP_SPAWN_INTERVAL = 8000;              // 道具生成间隔（毫秒）
+export const POWERUP_LIFETIME = 45000;                   // 道具存在时间（毫秒）
+export const POWERUP_MAX_COUNT = 3;                      // 同时存在的最大道具数
+export const POWERUP_EFFECT_DURATION = 45000;            // 道具效果持续时间（毫秒）
+export const POWERUP_BLINK_START = 5000;                 // 消失前闪烁开始时间（毫秒）
 
 // 音频配置
 export const AUDIO_BGM_BPM = 160; // 背景音乐节拍速度

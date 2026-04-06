@@ -118,6 +118,73 @@ body {
   border: 2px solid #444;
 }
 
+/* 道具说明 */
+.powerup-info {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  border-radius: 5px;
+  border: 2px solid #444;
+}
+
+.powerup-info-title {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.powerup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.powerup-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.powerup-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.powerup-icon-speed {
+  background: #00FF00;
+}
+
+.powerup-icon-fire {
+  background: #FF4500;
+}
+
+.powerup-icon-shield {
+  background: #00BFFF;
+}
+
+.powerup-label {
+  font-size: 12px;
+  color: #ccc;
+  flex: 1;
+}
+
+.powerup-desc {
+  font-size: 11px;
+  color: #888;
+}
+
+.powerup-hint {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+  margin-top: 10px;
+}
+
 /* 击毁统计 */
 .kill-stats {
   background: rgba(0, 0, 0, 0.5);

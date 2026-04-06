@@ -109,4 +109,21 @@ export class CollisionManager {
     }
     return false;
   }
+
+  /**
+   * 检测玩家与道具的碰撞
+   * @param {import('../entities/Player.js').Player} player
+   * @param {import('../entities/PowerUp.js').PowerUp[]} powerUps
+   * @returns {import('../entities/PowerUp.js').PowerUp|null}
+   */
+  static checkPlayerPowerUp(player, powerUps) {
+    const playerBounds = player.getBounds();
+
+    for (const powerUp of powerUps) {
+      if (rectIntersect(playerBounds, powerUp.getBounds())) {
+        return powerUp;
+      }
+    }
+    return null;
+  }
 }
