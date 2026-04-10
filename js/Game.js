@@ -73,8 +73,8 @@ export class Game {
       // 首次交互时初始化音频
       this.audio.init();
 
-      // 等待开始画面：按空格启动游戏
-      if (this.waitingForStart && e.code === 'Space') {
+      // 等待开始画面：按任意键（ESC除外）启动游戏
+      if (this.waitingForStart && e.code !== 'Escape') {
         this.waitingForStart = false;
         this.gameRunning = true;
         this.lastTime = performance.now();
@@ -205,7 +205,7 @@ export class Game {
     this.ctx.fillStyle = visible ? '#00ff00' : '#004400';
     this.ctx.font = '18px monospace';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('按 空格键 开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+    this.ctx.fillText('按 任意键 开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 
     requestAnimationFrame(() => this._startScreenBlink());
   }
