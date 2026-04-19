@@ -95,6 +95,23 @@ export class CollisionManager {
   }
 
   /**
+   * 检测坦克与其他坦克的碰撞
+   * @param {import('../entities/Tank.js').Tank} tank - 待检测的坦克
+   * @param {import('../entities/Tank.js').Tank[]} tanks - 其他坦克数组
+   * @returns {boolean} 是否发生碰撞
+   */
+  static checkTankCollision(tank, tanks) {
+    const tankBounds = tank.getBounds();
+    for (const other of tanks) {
+      if (other === tank || other.markedForDeletion) continue;
+      if (rectIntersect(tankBounds, other.getBounds())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * 检测敌人与基地的碰撞
    */
   static checkEnemyBase(enemies, obstacles) {

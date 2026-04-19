@@ -12,11 +12,12 @@ import { SpawnManager } from './managers/SpawnManager.js';
 import { MapGenerator } from './managers/MapGenerator.js';
 import { AudioManager } from './managers/AudioManager.js';
 import { PowerUpManager } from './managers/PowerUpManager.js';
-import { COLORS, SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
+import { ScoreManager } from './managers/ScoreManager.js';
+import { UIManager } from './managers/UIManager.js';
+import { COLORS, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
 import { rectIntersect } from './utils/helpers.js';
 
 export class Game {
-  static SCOREBOARD_KEY = 'tank_scoreboard';
   static MAX_PARTICLES = 200;
 
   constructor() {
@@ -28,10 +29,7 @@ export class Game {
     this.gameOver = false;
     this.dying = false;
     this.paused = false;
-    this.waitingForStart = false; // 等待玩家按空格开始
-    this.score = 0;
     this.gameTime = 0;
-    this.kills = { normal: 0, heavy: 0, fast: 0 };
 
     // 实体数组
     this.player = null;
@@ -48,24 +46,24 @@ export class Game {
     this.input = new InputManager();
     this.spawnManager = new SpawnManager();
     this.audio = new AudioManager();
+    this.scoreManager = new ScoreManager(
+      {
+        normal: document.getElementById('killNormal'),
+        heavy: document.getElementById('killHeavy'),
+        fast: document.getElementById('killFast')
+      },
+      document.getElementById('scoreboardList')
+    );
 
-    // UI元素
-    this.scoreElement = document.getElementById('score');
-    this.timeElement = document.getElementById('time');
-    this.enemiesElement = document.getElementById('enemies');
-    this.gameOverElement = document.getElementById('gameOver');
-    this.finalScoreElement = document.getElementById('finalScore');
-    this.killElements = {
-      normal: document.getElementById('killNormal'),
-      heavy: document.getElementById('killHeavy'),
-      fast: document.getElementById('killFast')
-    };
-    this.scoreboardList = document.getElementById('scoreboardList');
-
-    // 伪装层
-    this.disguiseOverlay = document.getElementById('disguiseOverlay');
-    this.gameContainer = document.querySelector('.game-container');
-    this.originalTitle = document.title;
+    this.ui = new UIManager({
+      scoreElement: document.getElementById('score'),
+      timeElement: document.getElementById('time'),
+      enemiesElement: document.getElementById('enemies'),
+      gameOverElement: document.getElementById('gameOver'),
+      finalScoreElement: document.getElementById('finalScore'),
+      disguiseOverlay: document.getElementById('disguiseOverlay'),
+      gameContainer: document.querySelector('.game-container')
+    });
 
     // 时间追踪
     this.lastTime = 0;
@@ -77,8 +75,8 @@ export class Game {
       this.audio.init();
 
       // 等待开始画面：按任意键（ESC除外）启动游戏
-      if (this.waitingForStart && e.code !== 'Escape') {
-        this.waitingForStart = false;
+      if (this.ui.isWaitingForStart() && e.code !== 'Escape') {
+        this.ui.setWaitingForStart(false);
         this.gameRunning = true;
         this.lastTime = performance.now();
         this.gameLoop(this.lastTime);
@@ -91,11 +89,23 @@ export class Game {
     });
 
     // ESC 暂停/恢复
-    this.input.onEscToggle = () => this.togglePause();
+    this.input.onEscToggle = () => {
+      this.paused = this.ui.togglePause(this.audio, this.paused, this.gameOver);
+      if (!this.paused && !this.gameOver) {
+        this.lastTime = performance.now();
+        this.input.clear();
+      }
+    };
 
     // 恢复按钮
     document.getElementById('resumeBtn').addEventListener('click', () => {
-      if (this.paused) this.togglePause();
+      if (this.paused) {
+        this.paused = this.ui.togglePause(this.audio, this.paused, this.gameOver);
+        if (!this.paused && !this.gameOver) {
+          this.lastTime = performance.now();
+          this.input.clear();
+        }
+      }
     });
 
     // 音乐开关按钮
@@ -110,7 +120,7 @@ export class Game {
 
     // 初始化游戏
     this.init();
-    this.renderScoreboard();
+    this.scoreManager.renderScoreboard();
   }
 
   /**
@@ -133,78 +143,28 @@ export class Game {
     this.lastPowerUpSpawnTime = performance.now();
 
     // 重置状态
-    this.score = 0;
+    this.scoreManager.reset();
     this.gameTime = 0;
     this.gameRunning = true;
     this.gameOver = false;
     this.dying = false;
-    this.kills = { normal: 0, heavy: 0, fast: 0 };
 
     // 重置管理器
     this.spawnManager.reset();
 
     // 更新UI
     this.updateUI();
-    this.gameOverElement.classList.add('hidden');
+    this.ui.hideGameOver();
   }
 
   /**
    * 开始游戏（预热渲染管线后显示开始画面）
    */
   async start() {
-    this.showBenchmarkScreen();
+    this.ui.showBenchmarkScreen(this.ctx);
     // 用 rAF 预热浏览器渲染管线，让首帧更稳定
     await this.warmup();
-    this.showStartScreen();
-  }
-
-  /**
-   * 显示预热画面
-   */
-  showBenchmarkScreen() {
-    this.ctx.fillStyle = COLORS.BACKGROUND;
-    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  }
-
-  /**
-   * 显示等待开始画面
-   */
-  showStartScreen() {
-    this.waitingForStart = true;
-    this.ctx.fillStyle = COLORS.BACKGROUND;
-    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    this.ctx.fillStyle = COLORS.TEXT;
-    this.ctx.textAlign = 'center';
-
-    // 标题
-    this.ctx.font = 'bold 36px monospace';
-    this.ctx.fillText('坦克大战', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
-
-    // 取消可能存在的旧闪烁循环
-    if (this._blinkRafId) cancelAnimationFrame(this._blinkRafId);
-    // 闪烁提示
-    this._startScreenBlink();
-  }
-
-  /**
-   * 开始画面文字闪烁动画
-   */
-  _startScreenBlink() {
-    if (!this.waitingForStart) return;
-
-    const now = performance.now();
-    const visible = Math.floor(now / 600) % 2 === 0;
-
-    // 清除提示区域（不影响标题）
-    this.ctx.fillStyle = COLORS.BACKGROUND;
-    this.ctx.fillRect(0, CANVAS_HEIGHT / 2 - 10, CANVAS_WIDTH, 60);
-
-    this.ctx.fillStyle = visible ? '#00ff00' : '#004400';
-    this.ctx.font = '18px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('按 任意键 开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
-
-    this._blinkRafId = requestAnimationFrame(() => this._startScreenBlink());
+    this.ui.showStartScreen(this.ctx);
   }
 
   /**
@@ -244,7 +204,7 @@ export class Game {
     if (this.timeAccumulator >= 1000) {
       this.gameTime++;
       this.timeAccumulator -= 1000;
-      this.updateUI();
+      this.ui.updateUI(this.scoreManager.getScore(), this.gameTime);
     }
 
     // 更新逻辑
@@ -344,7 +304,7 @@ export class Game {
     this.cleanup();
 
     // 更新敌人数量UI
-    this.enemiesElement.textContent = this.enemies.length;
+    this.ui.updateEnemyCount(this.enemies.length);
 
     // 检测游戏结束
     this.checkGameOver();
@@ -397,9 +357,8 @@ export class Game {
           enemy.markedForDeletion = true;
 
           // 记录击毁并加分
-          const points = this.addKill(enemy);
-          this.score += points;
-          this.updateUI();
+          this.scoreManager.addKill(enemy);
+          this.ui.updateUI(this.scoreManager.getScore(), this.gameTime);
 
           // 生成爆炸效果
           const particles = Particle.createLargeExplosion(
@@ -555,204 +514,21 @@ export class Game {
     this.dying = false;
     this.gameRunning = false;
     this.audio.stopBGM();
-    this.finalScoreElement.textContent = this.score;
 
     // 零分不计入排行榜
     let rank = -1;
-    if (this.score > 0) {
-      rank = this.saveScore(this.score);
-    }
-    this.gameOverElement.classList.remove('hidden');
-
-    if (rank >= 1 && rank <= 3) {
-      this.gameOverElement.classList.add('top-3', `top-${rank}`);
-      this._showCongrats(rank);
-      this._startCelebration();
-    }
-  }
-
-  /**
-   * 显示前三名祝贺文字
-   */
-  _showCongrats(rank) {
-    const messages = {
-      1: '🏆 新纪录！无人能敌！',
-      2: '🥈 亚军！离王者只差一步！',
-      3: '🥉 季军！实力不俗！',
-    };
-    let el = this.gameOverElement.querySelector('.congrats-text');
-    if (!el) {
-      el = document.createElement('p');
-      el.className = 'congrats-text';
-      this.gameOverElement.insertBefore(el, this.gameOverElement.querySelector('.instruction'));
-    }
-    el.textContent = messages[rank];
-  }
-
-  /**
-   * 前三名庆祝动画：在 game over 面板上生成金色烟花粒子
-   */
-  _startCelebration() {
-    const overlay = this.gameOverElement;
-    // 创建粒子容器
-    let container = overlay.querySelector('.celebration-particles');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'celebration-particles';
-      overlay.appendChild(container);
+    if (this.scoreManager.getScore() > 0) {
+      rank = this.scoreManager.saveScore();
     }
 
-    // 生成多波烟花
-    const colors = ['#FFD700', '#FFA500', '#FF6347', '#00FF00', '#00BFFF'];
-    for (let wave = 0; wave < 3; wave++) {
-      setTimeout(() => {
-        if (!this.gameOver) return;
-        for (let i = 0; i < 12; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'firework-particle';
-          const angle = (Math.PI * 2 * i) / 12;
-          const dist = 40 + Math.random() * 60;
-          const dx = Math.cos(angle) * dist;
-          const dy = Math.sin(angle) * dist;
-          particle.style.setProperty('--dx', `${dx}px`);
-          particle.style.setProperty('--dy', `${dy}px`);
-          particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-          particle.style.left = '50%';
-          particle.style.top = '40%';
-          container.appendChild(particle);
-          // 动画结束后移除
-          setTimeout(() => particle.remove(), 1200);
-        }
-      }, wave * 600);
-    }
-  }
-
-  /**
-   * 切换暂停/恢复（伪装模式）
-   */
-  togglePause() {
-    this.paused = !this.paused;
-
-    if (this.paused) {
-      // 进入伪装模式
-      this.audio.pause();
-      this.gameContainer.classList.add('hidden');
-      this.disguiseOverlay.classList.remove('hidden');
-      document.title = 'index.js - tank-project - Visual Studio Code';
-    } else {
-      // 恢复游戏
-      this.audio.resume();
-      this.disguiseOverlay.classList.add('hidden');
-      this.gameContainer.classList.remove('hidden');
-      document.title = this.originalTitle;
-      // 游戏进行中恢复时重置时间并清空按键
-      if (!this.gameOver) {
-        this.lastTime = performance.now();
-        this.input.clear();
-      }
-    }
-  }
-
-  /**
-   * 记录击毁并更新击毁统计UI
-   */
-  addKill(enemy) {
-    let points;
-    if (enemy instanceof HeavyEnemy) {
-      this.kills.heavy++;
-      points = SCORE_PER_HEAVY;
-    } else if (enemy instanceof FastEnemy) {
-      this.kills.fast++;
-      points = SCORE_PER_FAST;
-    } else {
-      this.kills.normal++;
-      points = SCORE_PER_ENEMY;
-    }
-    this.killElements.normal.textContent = this.kills.normal;
-    this.killElements.heavy.textContent = this.kills.heavy;
-    this.killElements.fast.textContent = this.kills.fast;
-    return points;
+    this.ui.showGameOver(this.scoreManager.getScore(), rank);
   }
 
   /**
    * 更新UI
    */
   updateUI() {
-    this.scoreElement.textContent = this.score;
-    this.timeElement.textContent = this.gameTime;
-  }
-
-  /**
-   * 保存得分到 localStorage，最多保留 20 条
-   * @returns {number} 当前分数的排名（从 1 开始），未上榜返回 -1
-   */
-  saveScore(score) {
-    const STORAGE_KEY = Game.SCOREBOARD_KEY;
-    const MAX_ENTRIES = 20;
-
-    const now = new Date();
-    const dateStr = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-    let records = [];
-    try {
-      records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-      records = [];
-    }
-
-    // 先计算不带本次分数时的排名基准
-    const currentEntry = { score, date: dateStr, _isCurrent: true };
-    records.push(currentEntry);
-    records.sort((a, b) => b.score - a.score);
-
-    // 找到本次分数的排名
-    const rank = records.findIndex(r => r._isCurrent) + 1;
-
-    // 清理标记并截断
-    delete currentEntry._isCurrent;
-    records = records.slice(0, MAX_ENTRIES);
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    this.renderScoreboard();
-
-    return rank;
-  }
-
-  /**
-   * 渲染历史得分榜
-   */
-  renderScoreboard() {
-    const STORAGE_KEY = Game.SCOREBOARD_KEY;
-    const RANK_LABELS = ['1st', '2nd', '3rd'];
-    const MAX_ROWS = 20;
-
-    let records = [];
-    try {
-      records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-      records = [];
-    }
-
-    let html = '';
-    for (let i = 0; i < MAX_ROWS; i++) {
-      if (i < records.length) {
-        const record = records[i];
-        const rankClass = i < 3 ? ` rank-${i + 1}` : '';
-        const rankText = i < 3 ? RANK_LABELS[i] : `${i + 1}`;
-        html += `<div class="scoreboard-row${rankClass}">
-          <span class="scoreboard-rank">${rankText}</span>
-          <span class="scoreboard-score">${record.score}</span>
-          <span class="scoreboard-date">${record.date}</span>
-        </div>`;
-      } else {
-        html += `<div class="scoreboard-row scoreboard-empty-row">
-          <span class="scoreboard-rank">${i + 1}</span>
-          <span class="scoreboard-score">---</span>
-          <span class="scoreboard-date"></span>
-        </div>`;
-      }
-    }
-    this.scoreboardList.innerHTML = html;
+    this.ui.updateUI(this.scoreManager.getScore(), this.gameTime);
   }
 
   /**
@@ -760,11 +536,7 @@ export class Game {
    */
   reset() {
     // 清理庆祝效果
-    this.gameOverElement.classList.remove('top-3', 'top-1', 'top-2', 'top-3');
-    const celebration = this.gameOverElement.querySelector('.celebration-particles');
-    if (celebration) celebration.remove();
-    const congrats = this.gameOverElement.querySelector('.congrats-text');
-    if (congrats) congrats.remove();
+    this.ui.resetGameOver();
 
     this.init();
     this.audio.playBGM();

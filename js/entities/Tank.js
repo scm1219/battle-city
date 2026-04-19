@@ -1,7 +1,7 @@
 // 坦克基类
 import { Entity } from './Entity.js';
 import { TANK_SIZE, BULLET_SIZE, TARGET_FRAME_TIME } from '../utils/constants.js';
-import { rectIntersect } from '../utils/helpers.js';
+import { CollisionManager } from '../managers/CollisionManager.js';
 
 export class Tank extends Entity {
   constructor(x, y, direction, speed, cooldown, maxCooldown) {
@@ -92,32 +92,17 @@ export class Tank extends Entity {
   }
 
   /**
-   * 检查与障碍物的碰撞（共享方法）
+   * 检查与障碍物的碰撞（委托 CollisionManager）
    */
   checkCollision(obstacles) {
-    const bounds = this.getBounds();
-    for (const obstacle of obstacles) {
-      // 森林不阻挡坦克
-      if (obstacle.isPassableByTank && obstacle.isPassableByTank()) continue;
-      if (rectIntersect(bounds, obstacle.getBounds())) {
-        return true;
-      }
-    }
-    return false;
+    return CollisionManager.checkTankObstacle(this, obstacles) !== null;
   }
 
   /**
-   * 检查与其他坦克的碰撞
+   * 检查与其他坦克的碰撞（委托 CollisionManager）
    */
   checkTankCollision(tanks) {
-    const bounds = this.getBounds();
-    for (const tank of tanks) {
-      if (tank === this || tank.markedForDeletion) continue;
-      if (rectIntersect(bounds, tank.getBounds())) {
-        return true;
-      }
-    }
-    return false;
+    return CollisionManager.checkTankCollision(this, tanks);
   }
 
   /**
