@@ -556,8 +556,75 @@ export class Game {
     this.gameRunning = false;
     this.audio.stopBGM();
     this.finalScoreElement.textContent = this.score;
+
+    // 零分不计入排行榜
+    let rank = -1;
+    if (this.score > 0) {
+      rank = this.saveScore(this.score);
+    }
     this.gameOverElement.classList.remove('hidden');
-    this.saveScore(this.score);
+
+    if (rank >= 1 && rank <= 3) {
+      this.gameOverElement.classList.add('top-3', `top-${rank}`);
+      this._showCongrats(rank);
+      this._startCelebration();
+    }
+  }
+
+  /**
+   * 显示前三名祝贺文字
+   */
+  _showCongrats(rank) {
+    const messages = {
+      1: '🏆 新纪录！无人能敌！',
+      2: '🥈 亚军！离王者只差一步！',
+      3: '🥉 季军！实力不俗！',
+    };
+    let el = this.gameOverElement.querySelector('.congrats-text');
+    if (!el) {
+      el = document.createElement('p');
+      el.className = 'congrats-text';
+      this.gameOverElement.insertBefore(el, this.gameOverElement.querySelector('.instruction'));
+    }
+    el.textContent = messages[rank];
+  }
+
+  /**
+   * 前三名庆祝动画：在 game over 面板上生成金色烟花粒子
+   */
+  _startCelebration() {
+    const overlay = this.gameOverElement;
+    // 创建粒子容器
+    let container = overlay.querySelector('.celebration-particles');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'celebration-particles';
+      overlay.appendChild(container);
+    }
+
+    // 生成多波烟花
+    const colors = ['#FFD700', '#FFA500', '#FF6347', '#00FF00', '#00BFFF'];
+    for (let wave = 0; wave < 3; wave++) {
+      setTimeout(() => {
+        if (!this.gameOver) return;
+        for (let i = 0; i < 12; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'firework-particle';
+          const angle = (Math.PI * 2 * i) / 12;
+          const dist = 40 + Math.random() * 60;
+          const dx = Math.cos(angle) * dist;
+          const dy = Math.sin(angle) * dist;
+          particle.style.setProperty('--dx', `${dx}px`);
+          particle.style.setProperty('--dy', `${dy}px`);
+          particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          particle.style.left = '50%';
+          particle.style.top = '40%';
+          container.appendChild(particle);
+          // 动画结束后移除
+          setTimeout(() => particle.remove(), 1200);
+        }
+      }, wave * 600);
+    }
   }
 
   /**
@@ -617,6 +684,7 @@ export class Game {
 
   /**
    * 保存得分到 localStorage，最多保留 20 条
+   * @returns {number} 当前分数的排名（从 1 开始），未上榜返回 -1
    */
   saveScore(score) {
     const STORAGE_KEY = Game.SCOREBOARD_KEY;
@@ -632,12 +700,22 @@ export class Game {
       records = [];
     }
 
-    records.push({ score, date: dateStr });
+    // 先计算不带本次分数时的排名基准
+    const currentEntry = { score, date: dateStr, _isCurrent: true };
+    records.push(currentEntry);
     records.sort((a, b) => b.score - a.score);
+
+    // 找到本次分数的排名
+    const rank = records.findIndex(r => r._isCurrent) + 1;
+
+    // 清理标记并截断
+    delete currentEntry._isCurrent;
     records = records.slice(0, MAX_ENTRIES);
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     this.renderScoreboard();
+
+    return rank;
   }
 
   /**
@@ -681,6 +759,13 @@ export class Game {
    * 重置游戏
    */
   reset() {
+    // 清理庆祝效果
+    this.gameOverElement.classList.remove('top-3', 'top-1', 'top-2', 'top-3');
+    const celebration = this.gameOverElement.querySelector('.celebration-particles');
+    if (celebration) celebration.remove();
+    const congrats = this.gameOverElement.querySelector('.congrats-text');
+    if (congrats) congrats.remove();
+
     this.init();
     this.audio.playBGM();
     this.start();

@@ -27,22 +27,42 @@ export class Bullet extends Entity {
   }
 
   /**
-   * 绘制子弹
+   * 绘制子弹（尖角朝飞行方向）
    */
   draw(ctx) {
-    // 发光层：略大的半透明矩形模拟 glow，避免 shadowBlur 性能开销
-    const glowPad = 3;
-    ctx.globalAlpha = 0.3;
+    const cx = this.x + this.width / 2;
+    const cy = this.y + this.height / 2;
+    const s = this.width / 2; // 半径
+
+    // 发光层
+    ctx.globalAlpha = 0.25;
     ctx.fillStyle = COLORS.BULLET;
-    ctx.fillRect(
-      this.x - glowPad, this.y - glowPad,
-      this.width + glowPad * 2, this.height + glowPad * 2
-    );
+    this._drawArrow(ctx, cx, cy, s + 3);
     ctx.globalAlpha = 1.0;
 
     // 子弹本体
     ctx.fillStyle = COLORS.BULLET;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    this._drawArrow(ctx, cx, cy, s);
+  }
+
+  /**
+   * 按方向绘制尖角三角形
+   */
+  _drawArrow(ctx, cx, cy, s) {
+    ctx.beginPath();
+    // 尖端和两侧根据方向旋转
+    const tips = {
+      0: [[0, -1], [-0.6, 0.8], [0.6, 0.8]],   // UP
+      1: [[1, 0], [-0.8, -0.6], [-0.8, 0.6]],   // RIGHT
+      2: [[0, 1], [-0.6, -0.8], [0.6, -0.8]],   // DOWN
+      3: [[-1, 0], [0.8, -0.6], [0.8, 0.6]],    // LEFT
+    };
+    const points = tips[this.direction];
+    ctx.moveTo(cx + points[0][0] * s, cy + points[0][1] * s);
+    ctx.lineTo(cx + points[1][0] * s, cy + points[1][1] * s);
+    ctx.lineTo(cx + points[2][0] * s, cy + points[2][1] * s);
+    ctx.closePath();
+    ctx.fill();
   }
 
   /**

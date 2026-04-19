@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- 背景 -->
+  <rect width="32" height="32" fill="#111"/>
+
+  <!-- 左履带 -->
+  <rect x="3" y="12" width="6" height="14" rx="1" fill="#0055AA"/>
+  <!-- 右履带 -->
+  <rect x="23" y="12" width="6" height="14" rx="1" fill="#0055AA"/>
+
+  <!-- 车身 -->
+  <rect x="6" y="13" width="20" height="12" rx="1" fill="#0088FF"/>
+
+  <!-- 炮管 -->
+  <rect x="14" y="4" width="4" height="12" rx="1" fill="#0066CC"/>
+
+  <!-- 炮塔 -->
+  <rect x="10" y="14" width="12" height="8" rx="2" fill="#33AAFF"/>
+
+  <!-- 履带纹路 -->
+  <rect x="4" y="14" width="4" height="2" rx="0.5" fill="#003366"/>
+  <rect x="4" y="18" width="4" height="2" rx="0.5" fill="#003366"/>
+  <rect x="4" y="22" width="4" height="2" rx="0.5" fill="#003366"/>
+  <rect x="24" y="14" width="4" height="2" rx="0.5" fill="#003366"/>
+  <rect x="24" y="18" width="4" height="2" rx="0.5" fill="#003366"/>
+  <rect x="24" y="22" width="4" height="2" rx="0.5" fill="#003366"/>
+</svg>

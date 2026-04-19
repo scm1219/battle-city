@@ -11,7 +11,7 @@ export class SpeedEffect extends PowerUpEffect {
 
   apply(target) {
     this._originalSpeed = target.speed;
-    target.speed *= 2;
+    target.speed *= 1.5;
   }
 
   remove(target) {

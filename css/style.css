@@ -110,6 +110,89 @@ body {
   color: #aaa;
 }
 
+/* 前三名祝贺文字 */
+.congrats-text {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FFD700;
+  margin-bottom: 12px;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  animation: congratsBounce 0.6s ease-out;
+}
+
+@keyframes congratsBounce {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== 前三名庆祝效果 ===== */
+
+/* 基础前三名样式：金色边框 + 发光 */
+.game-over.top-3 {
+  border-color: #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
+  animation: top3Glow 1.5s ease-in-out infinite alternate;
+}
+
+.game-over.top-3 h2 {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.game-over.top-3 .final-score span {
+  color: #FFD700;
+}
+
+/* 第一名额外效果：标题加皇冠 + 更强发光 */
+.game-over.top-1 {
+  border-color: #FFD700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 215, 0, 0.3);
+}
+
+.game-over.top-1 h2::before {
+  content: '👑 ';
+}
+
+/* 烟花粒子容器 */
+.celebration-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 单个烟花粒子 */
+.firework-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: fireworkBurst 1.2s ease-out forwards;
+}
+
+@keyframes top3Glow {
+  from { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.15); }
+  to { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.25); }
+}
+
+@keyframes fireworkBurst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0);
+    opacity: 0;
+  }
+}
+
 /* 操作说明 */
 .controls {
   background: rgba(0, 0, 0, 0.5);
