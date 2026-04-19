@@ -1,4 +1,5 @@
-// Boss 敌人（白色死神，智能 AI）
+// Boss 敌人（白色死神）
+// 移动策略与普通敌人相同，但前方有我方单位时必定朝向开火
 import { Enemy } from './Enemy.js';
 import {
   BOSS_SPEED, BOSS_COOLDOWN, BOSS_HP, BOSS_SCORE,
@@ -25,11 +26,6 @@ export class BossEnemy extends Enemy {
     this.treadColor = COLORS.BOSS_ENEMY_TREAD;
     this.hitFlashTime = 0;
     this.killType = 'boss';
-    // 基地目标坐标（像素，网格 8,15 居中）
-    this.baseTargetX = 8 * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
-    this.baseTargetY = 15 * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
-    // 绕行计数器（交替尝试两个垂直方向）
-    this.dodgeCounter = 0;
   }
 
   /**
@@ -42,7 +38,7 @@ export class BossEnemy extends Enemy {
   }
 
   /**
-   * Boss 完整 update（完全覆盖 Enemy.update，加入绕行逻辑）
+   * Boss update：与 Enemy 相同的移动逻辑，但前方有玩家时必定朝向开火
    */
   update(player, obstacles, allEnemies, deltaTime = TARGET_FRAME_TIME) {
     // 更新受击闪烁
@@ -53,7 +49,34 @@ export class BossEnemy extends Enemy {
     const scale = deltaTime / TARGET_FRAME_TIME;
     this.updateCooldown(deltaTime);
 
-    // AI 决策（帧率无关计时）
+    // 前方有玩家 → 面朝玩家，边移动边开火
+    const fireDir = this._getFiringDirection(player);
+    if (fireDir !== null) {
+      this.move(fireDir);
+
+      const prevX = this.x;
+      const prevY = this.y;
+      switch (fireDir) {
+        case DIRECTION.UP:    this.y -= this.speed * scale; break;
+        case DIRECTION.RIGHT: this.x += this.speed * scale; break;
+        case DIRECTION.DOWN:  this.y += this.speed * scale; break;
+        case DIRECTION.LEFT:  this.x -= this.speed * scale; break;
+      }
+
+      if (this.checkCollision(obstacles) || this.checkTankCollision([player, ...allEnemies])) {
+        this.x = prevX;
+        this.y = prevY;
+      }
+
+      this.constrainToBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      if (this.canShoot()) {
+        return this.shoot();
+      }
+      return null;
+    }
+
+    // 常规 AI 决策（与 Enemy 相同）
     this.aiTimer += scale;
     if (this.aiTimer >= ENEMY_AI_UPDATE_INTERVAL || !this.currentDecision) {
       this.aiTimer = 0;
@@ -67,7 +90,6 @@ export class BossEnemy extends Enemy {
 
       this.move(this.currentDecision.direction);
 
-      // 帧率无关位移
       switch (this.direction) {
         case DIRECTION.UP:    this.y -= this.speed * scale; break;
         case DIRECTION.RIGHT: this.x += this.speed * scale; break;
@@ -75,18 +97,16 @@ export class BossEnemy extends Enemy {
         case DIRECTION.LEFT:  this.x -= this.speed * scale; break;
       }
 
-      // 碰撞检测（障碍物 + 其他坦克）
       if (this.checkCollision(obstacles) || this.checkTankCollision([player, ...allEnemies])) {
         this.x = prevX;
         this.y = prevY;
-        // 碰撞后尝试绕行
-        this._tryDodge();
+        this.aiTimer = ENEMY_AI_UPDATE_INTERVAL;
       }
 
       this.constrainToBounds(CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
-    // 持续射击（冷却好即射）
+    // 冷却好就射
     if (this.canShoot()) {
       return this.shoot();
     }
@@ -95,113 +115,27 @@ export class BossEnemy extends Enemy {
   }
 
   /**
-   * Boss 智能 AI 决策
-   * 优先级：射击线上的玩家 > 射击线上的基地 > 向基地移动
-   */
-  makeDecision(player) {
-    // 1. 检测玩家是否在射击线上
-    if (player && !player.markedForDeletion) {
-      const fireDir = this._getFiringDirection(player);
-      if (fireDir !== null) {
-        this.currentDecision = {
-          direction: fireDir,
-          shouldMove: false
-        };
-        return;
-      }
-    }
-
-    // 2. 检测基地是否在射击线上（同列对齐，停下攻击基地）
-    const baseFireDir = this._getBaseFiringDirection();
-    if (baseFireDir !== null) {
-      this.currentDecision = {
-        direction: baseFireDir,
-        shouldMove: false
-      };
-      return;
-    }
-
-    // 3. 向基地移动
-    const moveDir = this._getDirectionToBase();
-    this.currentDecision = {
-      direction: moveDir,
-      shouldMove: true
-    };
-  }
-
-  /**
-   * 碰撞受阻后尝试绕行（交替尝试垂直方向）
-   */
-  _tryDodge() {
-    this.dodgeCounter++;
-    const baseDir = this._getDirectionToBase();
-    // 根据基准方向选择两个垂直方向
-    let dodgeDirs;
-    if (baseDir === DIRECTION.UP || baseDir === DIRECTION.DOWN) {
-      dodgeDirs = [DIRECTION.LEFT, DIRECTION.RIGHT];
-    } else {
-      dodgeDirs = [DIRECTION.UP, DIRECTION.DOWN];
-    }
-    const idx = this.dodgeCounter % 2;
-    this.currentDecision = {
-      direction: dodgeDirs[idx],
-      shouldMove: true
-    };
-  }
-
-  /**
-   * 检测玩家是否在射击线上
+   * 检测玩家是否在前方射击线上
    * @returns {number|null} 应朝向的方向，或 null
    */
   _getFiringDirection(player) {
+    if (!player || player.markedForDeletion) return null;
+
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     const range = GRID_SIZE * FIRE_LINE_RANGE;
 
-    // X 轴对齐（同一水平线）
+    // 同一水平线
     if (Math.abs(dy) < TANK_SIZE && Math.abs(dx) <= range) {
       return dx > 0 ? DIRECTION.RIGHT : DIRECTION.LEFT;
     }
 
-    // Y 轴对齐（同一垂直线）
+    // 同一垂直线
     if (Math.abs(dx) < TANK_SIZE && Math.abs(dy) <= range) {
       return dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
     }
 
     return null;
-  }
-
-  /**
-   * 检测基地是否在射击线上（同列对齐）
-   * Boss 与基地在同一列且距离足够近时，停下朝基地射击
-   * @returns {number|null} 应朝向的方向，或 null
-   */
-  _getBaseFiringDirection() {
-    const dx = this.baseTargetX - this.x;
-    const dy = this.baseTargetY - this.y;
-    const range = GRID_SIZE * 6;
-
-    // X 轴对齐（同一列），基地在射击范围内
-    if (Math.abs(dx) < TANK_SIZE && Math.abs(dy) <= range) {
-      return dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
-    }
-
-    return null;
-  }
-
-  /**
-   * 计算向基地移动的方向
-   */
-  _getDirectionToBase() {
-    const dx = this.baseTargetX - this.x;
-    const dy = this.baseTargetY - this.y;
-
-    // 选择距离更大的轴
-    if (Math.abs(dx) > Math.abs(dy)) {
-      return dx > 0 ? DIRECTION.RIGHT : DIRECTION.LEFT;
-    } else {
-      return dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
-    }
   }
 
   /**
@@ -212,10 +146,9 @@ export class BossEnemy extends Enemy {
   }
 
   /**
-   * 绘制 Boss（受击闪烁 + 变色血条）
+   * 绘制 Boss（受击闪烁 + 血条）
    */
   draw(ctx) {
-    // 受击闪烁效果：红色闪烁
     if (this.hitFlashTime > 0) {
       const savedColor = this.color;
       const savedTread = this.treadColor;
@@ -228,7 +161,7 @@ export class BossEnemy extends Enemy {
       super.draw(ctx);
     }
 
-    // 绘制血条
+    // 血条
     const barWidth = TANK_SIZE;
     const barHeight = 3;
     const barX = this.x;
@@ -236,7 +169,6 @@ export class BossEnemy extends Enemy {
 
     ctx.fillStyle = '#333333';
     ctx.fillRect(barX, barY, barWidth, barHeight);
-    // 血量颜色：>50% 绿色，>25% 黄色，<=25% 红色
     const hpRatio = this.hp / this.maxHp;
     ctx.fillStyle = hpRatio > 0.5 ? '#00FF00' : hpRatio > 0.25 ? '#FFFF00' : '#FF0000';
     ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight);
