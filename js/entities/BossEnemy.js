@@ -96,7 +96,7 @@ export class BossEnemy extends Enemy {
 
   /**
    * Boss 智能 AI 决策
-   * 优先级：射击线上的玩家 > 向基地移动
+   * 优先级：射击线上的玩家 > 射击线上的基地 > 向基地移动
    */
   makeDecision(player) {
     // 1. 检测玩家是否在射击线上
@@ -111,7 +111,17 @@ export class BossEnemy extends Enemy {
       }
     }
 
-    // 2. 向基地移动
+    // 2. 检测基地是否在射击线上（同列对齐，停下攻击基地）
+    const baseFireDir = this._getBaseFiringDirection();
+    if (baseFireDir !== null) {
+      this.currentDecision = {
+        direction: baseFireDir,
+        shouldMove: false
+      };
+      return;
+    }
+
+    // 3. 向基地移动
     const moveDir = this._getDirectionToBase();
     this.currentDecision = {
       direction: moveDir,
@@ -162,16 +172,29 @@ export class BossEnemy extends Enemy {
   }
 
   /**
+   * 检测基地是否在射击线上（同列对齐）
+   * Boss 与基地在同一列且距离足够近时，停下朝基地射击
+   * @returns {number|null} 应朝向的方向，或 null
+   */
+  _getBaseFiringDirection() {
+    const dx = this.baseTargetX - this.x;
+    const dy = this.baseTargetY - this.y;
+    const range = GRID_SIZE * 6;
+
+    // X 轴对齐（同一列），基地在射击范围内
+    if (Math.abs(dx) < TANK_SIZE && Math.abs(dy) <= range) {
+      return dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
+    }
+
+    return null;
+  }
+
+  /**
    * 计算向基地移动的方向
    */
   _getDirectionToBase() {
     const dx = this.baseTargetX - this.x;
     const dy = this.baseTargetY - this.y;
-
-    // 已到达基地附近
-    if (Math.abs(dx) < TANK_SIZE && Math.abs(dy) < TANK_SIZE) {
-      return DIRECTION.DOWN;
-    }
 
     // 选择距离更大的轴
     if (Math.abs(dx) > Math.abs(dy)) {
