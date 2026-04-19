@@ -11,7 +11,7 @@ export class ScoreManager {
    */
   constructor(killElements, scoreboardList) {
     this.score = 0;
-    this.kills = { normal: 0, heavy: 0, fast: 0 };
+    this.kills = { normal: 0, heavy: 0, fast: 0, boss: 0 };
     this.killElements = killElements;
     this.scoreboardList = scoreboardList;
   }
@@ -31,6 +31,10 @@ export class ScoreManager {
   addKill(enemy) {
     const points = enemy.getScore();
     this.score += points;
+    const type = enemy.killType || 'normal';
+    if (this.kills[type] !== undefined) {
+      this.kills[type]++;
+    }
     this._updateKillDisplay();
     return points;
   }
@@ -40,7 +44,7 @@ export class ScoreManager {
    */
   reset() {
     this.score = 0;
-    this.kills = { normal: 0, heavy: 0, fast: 0 };
+    this.kills = { normal: 0, heavy: 0, fast: 0, boss: 0 };
     this._updateKillDisplay();
   }
 
@@ -120,5 +124,8 @@ export class ScoreManager {
     this.killElements.normal.textContent = this.kills.normal;
     this.killElements.heavy.textContent = this.kills.heavy;
     this.killElements.fast.textContent = this.kills.fast;
+    if (this.killElements.boss) {
+      this.killElements.boss.textContent = this.kills.boss;
+    }
   }
 }

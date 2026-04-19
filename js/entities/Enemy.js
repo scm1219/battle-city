@@ -9,6 +9,7 @@ export class Enemy extends Tank {
     this.treadColor = COLORS.ENEMY_TREAD;
     this.aiTimer = 0;
     this.currentDecision = null; // { direction, shouldMove }
+    this.killType = 'normal';
   }
 
   /**

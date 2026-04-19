@@ -1,5 +1,5 @@
 // 敌人生成管理器
-import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE, TANK_SIZE } from '../utils/constants.js';
+import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE, TANK_SIZE, BOSS_SPAWN_INTERVAL } from '../utils/constants.js';
 import { randomInt, rectIntersect } from '../utils/helpers.js';
 
 export class SpawnManager {
@@ -7,6 +7,7 @@ export class SpawnManager {
     this.lastSpawnTime = 0;
     this.currentInterval = SPAWN_INTERVAL_INITIAL;
     this.gameStartTime = performance.now();
+    this.lastBossSpawnTime = performance.now();
   }
 
   /**
@@ -85,11 +86,32 @@ export class SpawnManager {
   }
 
   /**
+   * 判断是否应该生成 Boss
+   * @param {boolean} hasBoss - 场上是否已有 Boss
+   */
+  shouldSpawnBoss(hasBoss) {
+    if (hasBoss) return false;
+    const now = performance.now();
+    return now - this.lastBossSpawnTime >= BOSS_SPAWN_INTERVAL;
+  }
+
+  /**
+   * 生成 Boss（复用 spawnEnemy 的碰撞检测选择生成点）
+   * @param {Array} enemies - 当前敌人列表
+   * @param {Object|null} player - 玩家对象
+   */
+  spawnBoss(enemies = [], player = null) {
+    this.lastBossSpawnTime = performance.now();
+    return this.spawnEnemy(enemies, player);
+  }
+
+  /**
    * 重置生成器
    */
   reset() {
     this.lastSpawnTime = 0;
     this.currentInterval = SPAWN_INTERVAL_INITIAL;
     this.gameStartTime = performance.now();
+    this.lastBossSpawnTime = performance.now();
   }
 }

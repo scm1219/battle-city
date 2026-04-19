@@ -46,6 +46,8 @@ export const COLORS = {
   HEAVY_ENEMY_TREAD: '#008800',
   FAST_ENEMY: '#FF69B4',
   FAST_ENEMY_TREAD: '#C71585',
+  BOSS_ENEMY: '#FFFFFF',
+  BOSS_ENEMY_TREAD: '#CCCCCC',
   BULLET: '#FFFF00',
   BRICK: '#FF8C00',
   STEEL: '#808080',
@@ -67,6 +69,13 @@ export const SCORE_PER_HEAVY = 200;
 export const SCORE_PER_FAST = 150;
 export const HEAVY_ENEMY_CHANCE = 0.3; // 30%概率生成重装敌人
 export const FAST_ENEMY_CHANCE = 0.2; // 20%概率生成快速敌人
+
+// Boss 常量
+export const BOSS_SPEED = 2.25;                     // 1.5倍普通敌人速度
+export const BOSS_COOLDOWN = 45;                    // 2倍射速（普通敌人90帧）
+export const BOSS_HP = 4;                           // 2倍重装敌人血量
+export const BOSS_SCORE = 500;                      // 击毁分值
+export const BOSS_SPAWN_INTERVAL = 60000;           // 60秒生成间隔（毫秒）
 
 // 敌人生成点（格子坐标）
 export const SPAWN_POINTS = [

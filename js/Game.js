@@ -3,6 +3,7 @@ import { Player } from './entities/Player.js';
 import { Enemy } from './entities/Enemy.js';
 import { HeavyEnemy } from './entities/HeavyEnemy.js';
 import { FastEnemy } from './entities/FastEnemy.js';
+import { BossEnemy } from './entities/BossEnemy.js';
 import { Bullet } from './entities/Bullet.js';
 import { Particle } from './entities/Particle.js';
 import { PowerUp } from './entities/PowerUp.js';
@@ -50,7 +51,8 @@ export class Game {
       {
         normal: document.getElementById('killNormal'),
         heavy: document.getElementById('killHeavy'),
-        fast: document.getElementById('killFast')
+        fast: document.getElementById('killFast'),
+        boss: document.getElementById('killBoss')
       },
       document.getElementById('scoreboardList')
     );
@@ -256,6 +258,15 @@ export class Game {
           enemy = new Enemy(spawnPos.x, spawnPos.y);
         }
         this.enemies.push(enemy);
+      }
+    }
+
+    // Boss 生成（独立于普通敌人，场上最多 1 只）
+    const hasBoss = this.enemies.some(e => e instanceof BossEnemy);
+    if (this.spawnManager.shouldSpawnBoss(hasBoss)) {
+      const bossSpawnPos = this.spawnManager.spawnBoss(this.enemies, this.player);
+      if (bossSpawnPos) {
+        this.enemies.push(new BossEnemy(bossSpawnPos.x, bossSpawnPos.y));
       }
     }
 

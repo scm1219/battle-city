@@ -12,6 +12,7 @@ export class HeavyEnemy extends Enemy {
     this.color = COLORS.HEAVY_ENEMY;
     this.treadColor = COLORS.HEAVY_ENEMY_TREAD;
     this.hitFlashTime = 0; // 受击闪烁剩余时间（毫秒）
+    this.killType = 'heavy';
   }
 
   /**

@@ -8,6 +8,7 @@ export class FastEnemy extends Enemy {
     this.speed = FAST_ENEMY_SPEED;
     this.color = COLORS.FAST_ENEMY;
     this.treadColor = COLORS.FAST_ENEMY_TREAD;
+    this.killType = 'fast';
   }
 
   /**
