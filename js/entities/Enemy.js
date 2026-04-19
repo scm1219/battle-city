@@ -1,6 +1,6 @@
 // 敌人类
 import { Tank } from './Tank.js';
-import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION, ENEMY_AI_UPDATE_INTERVAL, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME } from '../utils/constants.js';
+import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION, ENEMY_AI_UPDATE_INTERVAL, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, SCORE_PER_ENEMY } from '../utils/constants.js';
 
 export class Enemy extends Tank {
   constructor(x, y) {
@@ -99,6 +99,22 @@ export class Enemy extends Tank {
     } else {
       return dy > 0 ? DIRECTION.DOWN : DIRECTION.UP;
     }
+  }
+
+  /**
+   * 受击，返回是否被摧毁（默认一击必杀，HeavyEnemy 覆盖为 HP 机制）
+   * @returns {boolean}
+   */
+  hit() {
+    return true;
+  }
+
+  /**
+   * 获取击毁分值（子类可覆盖）
+   * @returns {number}
+   */
+  getScore() {
+    return SCORE_PER_ENEMY;
   }
 
   /**

@@ -1,5 +1,5 @@
 // 敌人生成管理器
-import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE } from '../utils/constants.js';
+import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE, TANK_SIZE } from '../utils/constants.js';
 import { randomInt } from '../utils/helpers.js';
 
 export class SpawnManager {
@@ -33,8 +33,8 @@ export class SpawnManager {
 
     // 统计每个生成点附近的敌人数量
     const availablePoints = SPAWN_POINTS.filter(point => {
-      const px = point.x * GRID_SIZE + (GRID_SIZE - 36) / 2;
-      const py = point.y * GRID_SIZE + (GRID_SIZE - 36) / 2;
+      const px = point.x * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
+      const py = point.y * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
       const nearby = enemies.filter(e =>
         Math.abs(e.x - px) < GRID_SIZE && Math.abs(e.y - py) < GRID_SIZE
       );
@@ -47,8 +47,8 @@ export class SpawnManager {
     const spawnPoint = availablePoints[randomInt(0, availablePoints.length - 1)];
 
     // 转换为像素坐标（居中）
-    const x = spawnPoint.x * GRID_SIZE + (GRID_SIZE - 36) / 2;
-    const y = spawnPoint.y * GRID_SIZE + (GRID_SIZE - 36) / 2;
+    const x = spawnPoint.x * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
+    const y = spawnPoint.y * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
 
     return { x, y };
   }

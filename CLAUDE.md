@@ -10,13 +10,13 @@
 - **架构模式**: 面向对象经典架构，实体-管理器分层
 - **渲染引擎**: Canvas 2D（`requestAnimationFrame` 驱动游戏循环）
 - **构建工具**: 无（直接浏览器加载 ES Module）
-- **代码量**: 约 1800 行，21 个源文件
+- **代码量**: 约 2100 行，23 个源文件
 
 ### 核心设计
 
 1. **Game 主控制器** (`js/Game.js`) -- 游戏循环、状态管理、碰撞分发、渲染调度
 2. **实体层** (`js/entities/`) -- Entity 基类 -> Tank -> Player/Enemy/HeavyEnemy/FastEnemy，Bullet、Obstacle、Particle、PowerUp 及效果子类
-3. **管理器层** (`js/managers/`) -- 输入管理、碰撞检测、敌人生成、地图生成、道具管理、音频管理
+3. **管理器层** (`js/managers/`) -- 输入管理、碰撞检测、敌人生成、地图生成、道具管理、音频管理、分数与排行榜、UI 管理
 4. **工具层** (`js/utils/`) -- 常量配置、几何/随机工具函数
 
 ## 模块结构图
@@ -52,6 +52,8 @@ graph TD
     MGR --> M_MAP["MapGenerator.js"]
     MGR --> M_POWERUP["PowerUpManager.js"]
     MGR --> M_AUDIO["AudioManager.js"]
+    MGR --> M_SCORE["ScoreManager.js"]
+    MGR --> M_UI["UIManager.js"]
 
     UTL --> U_CONST["constants.js"]
     UTL --> U_HELP["helpers.js"]
@@ -66,7 +68,7 @@ graph TD
 | 模块路径 | 语言 | 职责 | 文件数 | 入口文件 |
 |---------|------|------|-------|---------|
 | `js/entities/` | JavaScript | 游戏实体（玩家、敌人、子弹、障碍物、粒子、道具及效果） | 14 | `Entity.js` (基类) |
-| `js/managers/` | JavaScript | 管理器（输入、碰撞、生成、地图、道具、音频） | 6 | 各自独立 |
+| `js/managers/` | JavaScript | 管理器（输入、碰撞、生成、地图、道具、音频、分数、UI） | 8 | 各自独立 |
 | `js/utils/` | JavaScript | 常量配置与工具函数 | 2 | `constants.js` |
 
 ## 运行与开发
@@ -109,8 +111,11 @@ npx serve .
 - 击毁普通敌人 +100 分，重装敌人 +200 分，快速敌人 +150 分
 - 道具系统：加速、速射、护盾三种道具随机生成
 - 敌人 AI 随时间增强（生成间隔从 3s 递减到 1s）
+- 同屏敌人上限 6 个
 - 玩家被击中或基地被摧毁均导致游戏结束
 - ESC 键触发 VS Code 伪装暂停界面
+- 排行榜使用 localStorage 持久化，最多保留 20 条记录
+- 进入前三名时显示庆祝动画与祝贺文字
 
 ## 测试策略
 
@@ -120,6 +125,7 @@ npx serve .
 - 实体碰撞边界条件测试
 - AI 决策逻辑单元测试
 - 地图生成覆盖率验证
+- 分数/排行榜持久化与排序正确性
 
 ## 编码规范
 
@@ -129,6 +135,7 @@ npx serve .
 - **实体继承链**: `Entity` -> `Tank` -> `Player`/`Enemy`/`HeavyEnemy`/`FastEnemy`，通过 `markedForDeletion` 标记清理
 - **碰撞检测**: 统一使用 AABB 矩形相交检测（`rectIntersect`）
 - **方向系统**: 数值编码 0=UP, 1=RIGHT, 2=DOWN, 3=LEFT
+- **分数多态**: 各敌人子类实现 `getScore()` 方法，`ScoreManager.addKill(enemy)` 通过多态获取分值
 
 ## AI 使用指引
 
@@ -138,9 +145,12 @@ npx serve .
 - AI 行为调整在 `Enemy.makeDecision()` 中修改概率权重
 - 地图生成逻辑在 `MapGenerator` 的静态方法中
 - 碰撞检测新增类型需在 `Game.handleCollisions()` 和 `CollisionManager` 中同步添加
+- UI 显示/隐藏逻辑集中在 `UIManager`，不直接操作 DOM
+- 排行榜数据格式与存储逻辑在 `ScoreManager`
 
 ## 变更记录 (Changelog)
 
 | 日期 | 操作 | 说明 |
 |------|------|------|
+| 2026-04-19 | 增量更新 | 新增 UIManager/ScoreManager 描述；更新文件数(21->23)、同屏上限(4->6)、Mermaid 图、模块索引 |
 | 2026-04-04 | 初始化 AI 上下文 | 首次生成 CLAUDE.md、模块文档与 index.json |

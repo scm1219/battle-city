@@ -351,7 +351,7 @@ export class Game {
         bullet.markedForDeletion = true;
 
         // 重装敌人使用 hp 机制，普通敌人直接摧毁
-        const destroyed = enemy.hit ? enemy.hit() : true;
+        const destroyed = enemy.hit();
 
         if (destroyed) {
           enemy.markedForDeletion = true;

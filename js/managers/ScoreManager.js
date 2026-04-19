@@ -1,6 +1,4 @@
 // 分数与排行榜管理器
-import { HeavyEnemy } from '../entities/HeavyEnemy.js';
-import { FastEnemy } from '../entities/FastEnemy.js';
 import { SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST } from '../utils/constants.js';
 
 export class ScoreManager {
@@ -31,17 +29,7 @@ export class ScoreManager {
    * @returns {number} 本次击毁得分
    */
   addKill(enemy) {
-    let points;
-    if (enemy instanceof HeavyEnemy) {
-      this.kills.heavy++;
-      points = SCORE_PER_HEAVY;
-    } else if (enemy instanceof FastEnemy) {
-      this.kills.fast++;
-      points = SCORE_PER_FAST;
-    } else {
-      this.kills.normal++;
-      points = SCORE_PER_ENEMY;
-    }
+    const points = enemy.getScore();
     this.score += points;
     this._updateKillDisplay();
     return points;

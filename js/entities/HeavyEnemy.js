@@ -1,6 +1,6 @@
 // 重装敌人（绿色坦克，需击中2次）
 import { Enemy } from './Enemy.js';
-import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION, TARGET_FRAME_TIME } from '../utils/constants.js';
+import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION, TARGET_FRAME_TIME, SCORE_PER_HEAVY } from '../utils/constants.js';
 
 // 受击闪烁持续时间（毫秒）
 const HIT_FLASH_DURATION = 167;
@@ -31,6 +31,13 @@ export class HeavyEnemy extends Enemy {
       this.hitFlashTime -= deltaTime;
     }
     super.update(player, obstacles, allEnemies, deltaTime);
+  }
+
+  /**
+   * 获取击毁分值
+   */
+  getScore() {
+    return SCORE_PER_HEAVY;
   }
 
   /**
