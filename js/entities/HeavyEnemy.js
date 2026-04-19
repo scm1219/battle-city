@@ -1,6 +1,9 @@
 // 重装敌人（绿色坦克，需击中2次）
 import { Enemy } from './Enemy.js';
-import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION } from '../utils/constants.js';
+import { ENEMY_SPEED, ENEMY_COOLDOWN, COLORS, DIRECTION, TARGET_FRAME_TIME } from '../utils/constants.js';
+
+// 受击闪烁持续时间（毫秒）
+const HIT_FLASH_DURATION = 167;
 
 export class HeavyEnemy extends Enemy {
   constructor(x, y) {
@@ -8,7 +11,7 @@ export class HeavyEnemy extends Enemy {
     this.hp = 2;
     this.color = COLORS.HEAVY_ENEMY;
     this.treadColor = COLORS.HEAVY_ENEMY_TREAD;
-    this.hitFlash = 0; // 受击闪烁计时器
+    this.hitFlashTime = 0; // 受击闪烁剩余时间（毫秒）
   }
 
   /**
@@ -16,8 +19,18 @@ export class HeavyEnemy extends Enemy {
    */
   hit() {
     this.hp--;
-    this.hitFlash = 10; // 闪烁10帧
+    this.hitFlashTime = HIT_FLASH_DURATION;
     return this.hp <= 0;
+  }
+
+  /**
+   * 更新受击闪烁计时器（帧率无关）
+   */
+  update(player, obstacles, allEnemies, deltaTime = TARGET_FRAME_TIME) {
+    if (this.hitFlashTime > 0) {
+      this.hitFlashTime -= deltaTime;
+    }
+    super.update(player, obstacles, allEnemies, deltaTime);
   }
 
   /**
@@ -25,8 +38,7 @@ export class HeavyEnemy extends Enemy {
    */
   draw(ctx) {
     // 受击闪烁效果：白色闪烁
-    if (this.hitFlash > 0) {
-      this.hitFlash--;
+    if (this.hitFlashTime > 0) {
       const savedColor = this.color;
       const savedTread = this.treadColor;
       this.color = '#FFFFFF';
@@ -34,10 +46,9 @@ export class HeavyEnemy extends Enemy {
       super.draw(ctx);
       this.color = savedColor;
       this.treadColor = savedTread;
-      return;
+    } else {
+      super.draw(ctx);
     }
-
-    super.draw(ctx);
 
     // 绘制血条
     const barWidth = 36;

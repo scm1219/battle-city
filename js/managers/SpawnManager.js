@@ -6,14 +6,14 @@ export class SpawnManager {
   constructor() {
     this.lastSpawnTime = 0;
     this.currentInterval = SPAWN_INTERVAL_INITIAL;
-    this.gameStartTime = Date.now();
+    this.gameStartTime = performance.now();
   }
 
   /**
    * 判断是否应该生成敌人
    */
   shouldSpawn() {
-    const now = Date.now();
+    const now = performance.now();
     const elapsed = now - this.lastSpawnTime;
 
     if (elapsed >= this.currentInterval) {
@@ -57,7 +57,7 @@ export class SpawnManager {
    * 更新难度（根据游戏时间）
    */
   updateDifficulty() {
-    const elapsed = Date.now() - this.gameStartTime;
+    const elapsed = performance.now() - this.gameStartTime;
     const seconds = Math.floor(elapsed / 1000);
 
     // 难度曲线
@@ -76,6 +76,6 @@ export class SpawnManager {
   reset() {
     this.lastSpawnTime = 0;
     this.currentInterval = SPAWN_INTERVAL_INITIAL;
-    this.gameStartTime = Date.now();
+    this.gameStartTime = performance.now();
   }
 }

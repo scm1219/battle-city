@@ -2,7 +2,7 @@
 
 ## 项目愿景
 
-经典 FC 风格网页坦克大战游戏。使用原生 Canvas API 与 ES6 模块化架构实现，零外部依赖，单 HTML 文件即可运行。支持玩家操作、敌人 AI、障碍物系统、爆炸粒子特效与难度递增的无尽模式。
+经典 FC 风格网页坦克大战游戏。使用原生 Canvas API 与 ES6 模块化架构实现，零外部依赖，单 HTML 文件即可运行。支持玩家操作、多种敌人 AI、障碍物系统、爆炸粒子特效、道具系统、程序化音频与难度递增的无尽模式。
 
 ## 架构总览
 
@@ -10,13 +10,13 @@
 - **架构模式**: 面向对象经典架构，实体-管理器分层
 - **渲染引擎**: Canvas 2D（`requestAnimationFrame` 驱动游戏循环）
 - **构建工具**: 无（直接浏览器加载 ES Module）
-- **代码量**: 约 850 行，16 个源文件
+- **代码量**: 约 1800 行，21 个源文件
 
 ### 核心设计
 
 1. **Game 主控制器** (`js/Game.js`) -- 游戏循环、状态管理、碰撞分发、渲染调度
-2. **实体层** (`js/entities/`) -- Entity 基类 -> Tank -> Player/Enemy，以及 Bullet、Obstacle、Particle
-3. **管理器层** (`js/managers/`) -- 输入管理、碰撞检测、敌人生成、地图生成
+2. **实体层** (`js/entities/`) -- Entity 基类 -> Tank -> Player/Enemy/HeavyEnemy/FastEnemy，Bullet、Obstacle、Particle、PowerUp 及效果子类
+3. **管理器层** (`js/managers/`) -- 输入管理、碰撞检测、敌人生成、地图生成、道具管理、音频管理
 4. **工具层** (`js/utils/`) -- 常量配置、几何/随机工具函数
 
 ## 模块结构图
@@ -26,7 +26,6 @@ graph TD
     ROOT["tank (项目根)"] --> HTML["index.html"]
     ROOT --> CSS["css/"]
     ROOT --> JS["js/"]
-    ROOT --> PLAN[".zcf/plan/"]
 
     CSS --> STYLE["style.css"]
 
@@ -39,14 +38,20 @@ graph TD
     ENT --> E_TANK["Tank.js (坦克基类)"]
     ENT --> E_PLAYER["Player.js"]
     ENT --> E_ENEMY["Enemy.js"]
+    ENT --> E_HEAVY["HeavyEnemy.js"]
+    ENT --> E_FAST["FastEnemy.js"]
     ENT --> E_BULLET["Bullet.js"]
     ENT --> E_OBS["Obstacle.js"]
     ENT --> E_PART["Particle.js"]
+    ENT --> E_POWERUP["PowerUp.js"]
+    ENT --> E_FX["effects/ (效果子类)"]
 
     MGR --> M_INPUT["InputManager.js"]
     MGR --> M_COLL["CollisionManager.js"]
     MGR --> M_SPAWN["SpawnManager.js"]
     MGR --> M_MAP["MapGenerator.js"]
+    MGR --> M_POWERUP["PowerUpManager.js"]
+    MGR --> M_AUDIO["AudioManager.js"]
 
     UTL --> U_CONST["constants.js"]
     UTL --> U_HELP["helpers.js"]
@@ -60,8 +65,8 @@ graph TD
 
 | 模块路径 | 语言 | 职责 | 文件数 | 入口文件 |
 |---------|------|------|-------|---------|
-| `js/entities/` | JavaScript | 游戏实体（玩家、敌人、子弹、障碍物、粒子） | 7 | `Entity.js` (基类) |
-| `js/managers/` | JavaScript | 管理器（输入、碰撞、生成、地图） | 4 | 各自独立 |
+| `js/entities/` | JavaScript | 游戏实体（玩家、敌人、子弹、障碍物、粒子、道具及效果） | 14 | `Entity.js` (基类) |
+| `js/managers/` | JavaScript | 管理器（输入、碰撞、生成、地图、道具、音频） | 6 | 各自独立 |
 | `js/utils/` | JavaScript | 常量配置与工具函数 | 2 | `constants.js` |
 
 ## 运行与开发
@@ -93,15 +98,19 @@ npx serve .
 | D / ArrowRight | 向右移动 |
 | Space | 发射子弹 |
 | R | 游戏结束后重新开始 |
+| ESC | 暂停/恢复（VS Code 伪装） |
 
 ### 游戏规则
 
-- 画布 520x520 像素，13x13 网格（每格 40px）
-- 玩家初始位于左下角 (40, 440)
-- 敌人从顶部三个生成点（左上、中上、右上）随机出现
-- 障碍物：砖块（可破坏）、钢块（不可破坏）、基地（底部中心，需保护）
-- 击毁敌人 +100 分，敌人 AI 随时间增强（生成间隔从 3s 递减到 1s）
-- 玩家被击中、与敌人碰撞、或基地被摧毁均导致游戏结束
+- 画布 680x680 像素，17x17 网格（每格 40px）
+- 玩家初始位于左下角
+- 敌人从顶部三个生成点（左上、中上、右上）随机出现，含普通、重装（2HP）、快速三种类型
+- 障碍物：砖块（可破坏）、钢块（不可破坏）、河流（不可通行）、森林（可隐藏）、基地（底部中心，需保护）
+- 击毁普通敌人 +100 分，重装敌人 +200 分，快速敌人 +150 分
+- 道具系统：加速、速射、护盾三种道具随机生成
+- 敌人 AI 随时间增强（生成间隔从 3s 递减到 1s）
+- 玩家被击中或基地被摧毁均导致游戏结束
+- ESC 键触发 VS Code 伪装暂停界面
 
 ## 测试策略
 
@@ -117,7 +126,7 @@ npx serve .
 - **模块化**: ES6 `import/export`，每个类一个文件
 - **命名**: 类使用 PascalCase，函数/变量使用 camelCase，常量使用 UPPER_SNAKE_CASE
 - **注释**: JSDoc 风格的方法注释，关键逻辑有中文行内注释
-- **实体继承链**: `Entity` -> `Tank` -> `Player`/`Enemy`，通过 `markedForDeletion` 标记清理
+- **实体继承链**: `Entity` -> `Tank` -> `Player`/`Enemy`/`HeavyEnemy`/`FastEnemy`，通过 `markedForDeletion` 标记清理
 - **碰撞检测**: 统一使用 AABB 矩形相交检测（`rectIntersect`）
 - **方向系统**: 数值编码 0=UP, 1=RIGHT, 2=DOWN, 3=LEFT
 

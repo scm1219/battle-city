@@ -3,8 +3,6 @@
 // 帧率基准配置
 export const TARGET_FPS = 60;
 export const TARGET_FRAME_TIME = 1000 / TARGET_FPS; // ~16.67ms
-export const BENCHMARK_DURATION = 500; // 基准测试持续毫秒数
-export let SPEED_SCALE = 1.0; // 由基准测试计算赋值
 
 // 画布配置
 export const CANVAS_WIDTH = 680;

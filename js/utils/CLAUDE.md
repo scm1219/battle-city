@@ -16,27 +16,38 @@
 
 | 常量名 | 值 | 说明 |
 |--------|---|------|
-| `CANVAS_WIDTH` | 520 | 画布宽度（像素） |
-| `CANVAS_HEIGHT` | 520 | 画布高度（像素） |
+| `TARGET_FPS` | 60 | 目标帧率 |
+| `TARGET_FRAME_TIME` | ~16.67 | 每帧目标毫秒数 |
+| `CANVAS_WIDTH` | 680 | 画布宽度（像素） |
+| `CANVAS_HEIGHT` | 680 | 画布高度（像素） |
 | `GRID_SIZE` | 40 | 单个网格边长 |
-| `GRID_COUNT` | 13 | 网格数量（13x13） |
+| `GRID_COUNT` | 17 | 网格数量（17x17） |
 | `DIRECTION` | `{UP:0, RIGHT:1, DOWN:2, LEFT:3}` | 方向枚举 |
 | `TANK_SIZE` | 36 | 坦克边长 |
 | `BULLET_SIZE` | 8 | 子弹边长 |
 | `PARTICLE_SIZE` | 4 | 粒子边长 |
-| `PLAYER_SPEED` | 3 | 玩家移动速度（像素/帧） |
-| `ENEMY_SPEED` | 2 | 敌人移动速度 |
-| `BULLET_SPEED` | 6 | 子弹飞行速度 |
-| `PLAYER_COOLDOWN` | 20 | 玩家射击冷却（帧数） |
-| `ENEMY_COOLDOWN` | 60 | 敌人射击冷却 |
+| `PLAYER_SPEED` | 2 | 玩家移动速度（像素/帧） |
+| `ENEMY_SPEED` | 1.5 | 普通敌人移动速度 |
+| `FAST_ENEMY_SPEED` | 3 | 快速敌人移动速度 |
+| `BULLET_SPEED` | 4 | 子弹飞行速度 |
+| `PLAYER_COOLDOWN` | 30 | 玩家射击冷却（帧数） |
+| `ENEMY_COOLDOWN` | 90 | 敌人射击冷却 |
 | `ENEMY_AI_UPDATE_INTERVAL` | 60 | AI 重新决策间隔（帧数） |
-| `COLORS` | `{...}` | 各元素颜色配置 |
+| `COLORS` | `{...}` | 各元素颜色配置（含玩家、敌人、重装敌人、快速敌人、道具等） |
 | `SPAWN_INTERVAL_INITIAL` | 3000 | 初始敌人生成间隔（毫秒） |
 | `SPAWN_INTERVAL_MIN` | 1000 | 最短生成间隔 |
-| `SCORE_PER_ENEMY` | 100 | 击毁敌人得分 |
-| `SPAWN_POINTS` | `[{x:0,y:0},{x:6,y:0},{x:12,y:0}]` | 敌人生成点（格子坐标） |
-| `BRICK_DENSITY` | 0.3 | 砖块生成概率 |
-| `STEEL_DENSITY` | 0.05 | 钢块生成概率 |
+| `SCORE_PER_ENEMY` | 100 | 击毁普通敌人得分 |
+| `SCORE_PER_HEAVY` | 200 | 击毁重装敌人得分 |
+| `SCORE_PER_FAST` | 150 | 击毁快速敌人得分 |
+| `HEAVY_ENEMY_CHANCE` | 0.3 | 重装敌人生成概率 |
+| `FAST_ENEMY_CHANCE` | 0.2 | 快速敌人生成概率 |
+| `SPAWN_POINTS` | `[{x:0,y:0},{x:8,y:0},{x:16,y:0}]` | 敌人生成点（格子坐标） |
+| `BRICK_DENSITY` | 0.3 | 砖块密度 |
+| `STEEL_DENSITY` | 0.05 | 钢块密度 |
+| `RIVER_DENSITY` | 0.08 | 河流密度 |
+| `FOREST_DENSITY` | 0.1 | 森林密度 |
+| `POWERUP_*` | ... | 道具尺寸、类型、间隔、持续时间等 |
+| `AUDIO_*` | ... | 音频 BPM、音量、持续时间等 |
 
 ### helpers.js -- 工具函数
 
@@ -70,11 +81,12 @@
 
 | 文件 | 行数 | 说明 |
 |-----|------|------|
-| `constants.js` | 62 | 全局常量配置 |
+| `constants.js` | 98 | 全局常量配置（含道具、音频） |
 | `helpers.js` | 76 | 几何/随机/方向工具函数 |
 
 ## 变更记录 (Changelog)
 
 | 日期 | 操作 | 说明 |
 |------|------|------|
+| 2026-04-19 | 同步文档与代码 | 更新常量值、新增道具/音频常量、修正画布/网格参数 |
 | 2026-04-04 | 初始化 AI 上下文 | 首次生成模块文档 |

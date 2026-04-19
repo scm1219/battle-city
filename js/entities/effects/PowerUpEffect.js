@@ -2,10 +2,12 @@
 export class PowerUpEffect {
   /**
    * @param {number} duration - 效果持续时间（毫秒）
+   * @param {string} type - 效果类型标识（'speed' | 'fireRate' | 'shield'）
    */
-  constructor(duration) {
+  constructor(duration, type) {
     this.remainingTime = duration;
     this.expired = false;
+    this.type = type;
   }
 
   /**

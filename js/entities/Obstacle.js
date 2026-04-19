@@ -2,6 +2,160 @@
 import { Entity } from './Entity.js';
 import { GRID_SIZE, COLORS } from '../utils/constants.js';
 
+// 离屏 Canvas 缓存：每种障碍物类型只渲染一次
+const _cache = {};
+
+/**
+ * 获取指定类型的离屏缓存 Canvas
+ */
+function getCacheCanvas(type) {
+  if (_cache[type]) return _cache[type];
+
+  const size = GRID_SIZE;
+  const offscreen = document.createElement('canvas');
+  offscreen.width = size;
+  offscreen.height = size;
+  const ctx = offscreen.getContext('2d');
+
+  switch (type) {
+    case 'brick':
+      renderBrick(ctx, size);
+      break;
+    case 'steel':
+      renderSteel(ctx, size);
+      break;
+    case 'base':
+      renderBase(ctx, size);
+      break;
+    case 'river':
+      renderRiver(ctx, size);
+      break;
+    case 'forest':
+      renderForest(ctx, size);
+      break;
+  }
+
+  _cache[type] = offscreen;
+  return offscreen;
+}
+
+/** 离屏渲染砖块 */
+function renderBrick(ctx, size) {
+  const brickSize = size / 4;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      ctx.fillStyle = (row + col) % 2 === 0 ? '#FF8C00' : '#FF7F00';
+      ctx.fillRect(col * brickSize, row * brickSize, brickSize - 1, brickSize - 1);
+    }
+  }
+  ctx.strokeStyle = '#CC7000';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, size, size);
+}
+
+/** 离屏渲染钢块 */
+function renderSteel(ctx, size) {
+  const gradient = ctx.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, '#A0A0A0');
+  gradient.addColorStop(0.5, '#808080');
+  gradient.addColorStop(1, '#606060');
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  // 铆钉
+  ctx.fillStyle = '#505050';
+  const rivetSize = 6;
+  const offset = 8;
+  ctx.fillRect(offset, offset, rivetSize, rivetSize);
+  ctx.fillRect(size - offset - rivetSize, offset, rivetSize, rivetSize);
+  ctx.fillRect(offset, size - offset - rivetSize, rivetSize, rivetSize);
+  ctx.fillRect(size - offset - rivetSize, size - offset - rivetSize, rivetSize, rivetSize);
+
+  ctx.strokeStyle = '#404040';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, size, size);
+}
+
+/** 离屏渲染基地 */
+function renderBase(ctx, size) {
+  ctx.fillStyle = COLORS.BASE;
+  ctx.fillRect(0, 0, size, size);
+
+  // 鹰标轮廓
+  const centerX = size / 2;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.moveTo(centerX, 8);
+  ctx.lineTo(size - 8, size - 8);
+  ctx.lineTo(8, size - 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // 内部细节
+  ctx.fillStyle = COLORS.BASE;
+  ctx.beginPath();
+  ctx.moveTo(centerX, 14);
+  ctx.lineTo(size - 14, size - 8);
+  ctx.lineTo(14, size - 8);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = '#1E40AF';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0, 0, size, size);
+}
+
+/** 离屏渲染河流 */
+function renderRiver(ctx, size) {
+  const gradient = ctx.createLinearGradient(0, 0, size, 0);
+  gradient.addColorStop(0, '#1565C0');
+  gradient.addColorStop(0.3, '#1E90FF');
+  gradient.addColorStop(0.7, '#42A5F5');
+  gradient.addColorStop(1, '#1565C0');
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  // 水波纹
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    const offsetY = size * (i + 1) / 4;
+    ctx.beginPath();
+    ctx.moveTo(0, offsetY);
+    ctx.quadraticCurveTo(size / 4, offsetY - 3, size / 2, offsetY);
+    ctx.quadraticCurveTo(size * 3 / 4, offsetY + 3, size, offsetY);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = '#0D47A1';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, size, size);
+}
+
+/** 离屏渲染森林 */
+function renderForest(ctx, size) {
+  ctx.fillStyle = '#1a5c1a';
+  ctx.fillRect(0, 0, size, size);
+
+  const treeSize = size / 3;
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 3; col++) {
+      const cx = col * treeSize + treeSize / 2;
+      const cy = row * treeSize + treeSize / 2;
+
+      ctx.fillStyle = (row + col) % 2 === 0 ? '#2d8b2d' : '#228B22';
+      ctx.beginPath();
+      ctx.arc(cx, cy, treeSize / 2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#5c3a1a';
+      ctx.fillRect(cx - 1, cy - 1, 2, 2);
+    }
+  }
+}
+
 export class Obstacle extends Entity {
   constructor(x, y, type) {
     super(x, y, GRID_SIZE, GRID_SIZE, 0, 0);
@@ -63,189 +217,10 @@ export class Obstacle extends Entity {
   }
 
   /**
-   * 绘制障碍物
+   * 绘制障碍物（使用离屏缓存贴图）
    */
   draw(ctx) {
-    const size = GRID_SIZE;
-
-    switch (this.type) {
-      case 'brick':
-        this.drawBrick(ctx, size);
-        break;
-      case 'steel':
-        this.drawSteel(ctx, size);
-        break;
-      case 'base':
-        this.drawBase(ctx, size);
-        break;
-      case 'river':
-        this.drawRiver(ctx, size);
-        break;
-      case 'forest':
-        this.drawForest(ctx, size);
-        break;
-    }
-  }
-
-  /**
-   * 绘制砖块
-   */
-  drawBrick(ctx, size) {
-    ctx.fillStyle = COLORS.BRICK;
-
-    // 绘制砖块纹理（4x4小格子）
-    const brickSize = size / 4;
-    for (let row = 0; row < 4; row++) {
-      for (let col = 0; col < 4; col++) {
-        // 交错砖块效果
-        if ((row + col) % 2 === 0) {
-          ctx.fillStyle = '#FF8C00';
-        } else {
-          ctx.fillStyle = '#FF7F00';
-        }
-        ctx.fillRect(
-          this.x + col * brickSize,
-          this.y + row * brickSize,
-          brickSize - 1,
-          brickSize - 1
-        );
-      }
-    }
-
-    // 边框
-    ctx.strokeStyle = '#CC7000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(this.x, this.y, size, size);
-  }
-
-  /**
-   * 绘制钢块
-   */
-  drawSteel(ctx, size) {
-    // 金属渐变效果
-    const gradient = ctx.createLinearGradient(this.x, this.y, this.x + size, this.y + size);
-    gradient.addColorStop(0, '#A0A0A0');
-    gradient.addColorStop(0.5, '#808080');
-    gradient.addColorStop(1, '#606060');
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(this.x, this.y, size, size);
-
-    // 铆钉效果
-    ctx.fillStyle = '#505050';
-    const rivetSize = 6;
-    const offset = 8;
-    ctx.fillRect(this.x + offset, this.y + offset, rivetSize, rivetSize);
-    ctx.fillRect(this.x + size - offset - rivetSize, this.y + offset, rivetSize, rivetSize);
-    ctx.fillRect(this.x + offset, this.y + size - offset - rivetSize, rivetSize, rivetSize);
-    ctx.fillRect(this.x + size - offset - rivetSize, this.y + size - offset - rivetSize, rivetSize, rivetSize);
-
-    // 边框
-    ctx.strokeStyle = '#404040';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(this.x, this.y, size, size);
-  }
-
-  /**
-   * 绘制基地
-   */
-  drawBase(ctx, size) {
-    // 蓝色背景
-    ctx.fillStyle = COLORS.BASE;
-    ctx.fillRect(this.x, this.y, size, size);
-
-    // 鹰标（简化版）
-    ctx.fillStyle = '#FFFFFF';
-    const centerX = this.x + size / 2;
-    const centerY = this.y + size / 2;
-
-    // 鹰的轮廓（简单三角形）
-    ctx.beginPath();
-    ctx.moveTo(centerX, this.y + 8);
-    ctx.lineTo(this.x + size - 8, this.y + size - 8);
-    ctx.lineTo(this.x + 8, this.y + size - 8);
-    ctx.closePath();
-    ctx.fill();
-
-    // 内部细节
-    ctx.fillStyle = COLORS.BASE;
-    ctx.beginPath();
-    ctx.moveTo(centerX, this.y + 14);
-    ctx.lineTo(this.x + size - 14, this.y + size - 8);
-    ctx.lineTo(this.x + 14, this.y + size - 8);
-    ctx.closePath();
-    ctx.fill();
-
-    // 边框
-    ctx.strokeStyle = '#1E40AF';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(this.x, this.y, size, size);
-  }
-
-  /**
-   * 绘制河流
-   */
-  drawRiver(ctx, size) {
-    // 水面渐变
-    const gradient = ctx.createLinearGradient(this.x, this.y, this.x + size, this.y);
-    gradient.addColorStop(0, '#1565C0');
-    gradient.addColorStop(0.3, '#1E90FF');
-    gradient.addColorStop(0.7, '#42A5F5');
-    gradient.addColorStop(1, '#1565C0');
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(this.x, this.y, size, size);
-
-    // 水波纹
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 1;
-    const waveCount = 3;
-    for (let i = 0; i < waveCount; i++) {
-      const offsetY = size * (i + 1) / (waveCount + 1);
-      ctx.beginPath();
-      ctx.moveTo(this.x, this.y + offsetY);
-      ctx.quadraticCurveTo(
-        this.x + size / 4, this.y + offsetY - 3,
-        this.x + size / 2, this.y + offsetY
-      );
-      ctx.quadraticCurveTo(
-        this.x + size * 3 / 4, this.y + offsetY + 3,
-        this.x + size, this.y + offsetY
-      );
-      ctx.stroke();
-    }
-
-    // 边框
-    ctx.strokeStyle = '#0D47A1';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(this.x, this.y, size, size);
-  }
-
-  /**
-   * 绘制森林
-   */
-  drawForest(ctx, size) {
-    // 深绿色底色
-    ctx.fillStyle = '#1a5c1a';
-    ctx.fillRect(this.x, this.y, size, size);
-
-    // 绘制树木（3x3 排列的小圆）
-    const treeSize = size / 3;
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const cx = this.x + col * treeSize + treeSize / 2;
-        const cy = this.y + row * treeSize + treeSize / 2;
-
-        // 树冠（圆形）
-        ctx.fillStyle = (row + col) % 2 === 0 ? '#2d8b2d' : '#228B22';
-        ctx.beginPath();
-        ctx.arc(cx, cy, treeSize / 2 - 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 树干（中心小点）
-        ctx.fillStyle = '#5c3a1a';
-        ctx.fillRect(cx - 1, cy - 1, 2, 2);
-      }
-    }
+    const cached = getCacheCanvas(this.type);
+    ctx.drawImage(cached, this.x, this.y);
   }
 }

@@ -30,14 +30,19 @@ export class Bullet extends Entity {
    * 绘制子弹
    */
   draw(ctx) {
+    // 发光层：略大的半透明矩形模拟 glow，避免 shadowBlur 性能开销
+    const glowPad = 3;
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = COLORS.BULLET;
+    ctx.fillRect(
+      this.x - glowPad, this.y - glowPad,
+      this.width + glowPad * 2, this.height + glowPad * 2
+    );
+    ctx.globalAlpha = 1.0;
+
+    // 子弹本体
     ctx.fillStyle = COLORS.BULLET;
     ctx.fillRect(this.x, this.y, this.width, this.height);
-
-    // 添加发光效果
-    ctx.shadowColor = COLORS.BULLET;
-    ctx.shadowBlur = 5;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    ctx.shadowBlur = 0;
   }
 
   /**

@@ -118,22 +118,10 @@ export class Player extends Tank {
    */
   removeEffectByType(type) {
     for (let i = this.effects.length - 1; i >= 0; i--) {
-      if (this.effects[i].constructor.name === this._effectClassForType(type)) {
+      if (this.effects[i].type === type) {
         this.effects[i].remove(this);
         this.effects.splice(i, 1);
       }
-    }
-  }
-
-  /**
-   * 道具类型到效果类名的映射
-   */
-  _effectClassForType(type) {
-    switch (type) {
-      case 'speed': return 'SpeedEffect';
-      case 'fireRate': return 'FireRateEffect';
-      case 'shield': return 'ShieldEffect';
-      default: return '';
     }
   }
 
@@ -160,7 +148,7 @@ export class Player extends Tank {
     const radius = half + 4;
 
     // 闪烁效果：每 300ms 切换
-    const blink = Math.floor(Date.now() / 300) % 2 === 0;
+    const blink = Math.floor(performance.now() / 300) % 2 === 0;
     const alpha = blink ? 0.4 : 0.2;
 
     ctx.save();

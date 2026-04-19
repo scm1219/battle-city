@@ -11,7 +11,7 @@ export class PowerUp extends Entity {
   constructor(x, y, type) {
     super(x, y, POWERUP_SIZE, POWERUP_SIZE);
     this.type = type;
-    this.createdAt = Date.now();
+    this.createdAt = performance.now();
   }
 
   /**
@@ -28,14 +28,14 @@ export class PowerUp extends Entity {
    * 是否已超时
    */
   isExpired() {
-    return Date.now() - this.createdAt >= POWERUP_LIFETIME;
+    return performance.now() - this.createdAt >= POWERUP_LIFETIME;
   }
 
   /**
    * 是否正在闪烁（即将消失）
    */
   isBlinking() {
-    const remaining = POWERUP_LIFETIME - (Date.now() - this.createdAt);
+    const remaining = POWERUP_LIFETIME - (performance.now() - this.createdAt);
     return remaining <= POWERUP_BLINK_START && remaining > 0;
   }
 
@@ -43,7 +43,7 @@ export class PowerUp extends Entity {
    * 获取道具剩余时间（毫秒）
    */
   getRemainingTime() {
-    return Math.max(0, POWERUP_LIFETIME - (Date.now() - this.createdAt));
+    return Math.max(0, POWERUP_LIFETIME - (performance.now() - this.createdAt));
   }
 
   /**

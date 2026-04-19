@@ -25,23 +25,6 @@ export class MapGenerator {
   }
 
   /**
-   * 生成边界钢墙
-   */
-  static generateBorderWalls(obstacles) {
-    // 上下边界
-    for (let x = 0; x < GRID_COUNT; x++) {
-      obstacles.push(new Obstacle(x * GRID_SIZE, 0, 'steel'));
-      obstacles.push(new Obstacle(x * GRID_SIZE, (GRID_COUNT - 1) * GRID_SIZE, 'steel'));
-    }
-
-    // 左右边界
-    for (let y = 0; y < GRID_COUNT; y++) {
-      obstacles.push(new Obstacle(0, y * GRID_SIZE, 'steel'));
-      obstacles.push(new Obstacle((GRID_COUNT - 1) * GRID_SIZE, y * GRID_SIZE, 'steel'));
-    }
-  }
-
-  /**
    * 生成随机障碍物
    */
   static generateRandomObstacles(obstacles) {

@@ -6,7 +6,7 @@ export class FireRateEffect extends PowerUpEffect {
    * @param {number} duration - 效果持续时间（毫秒）
    */
   constructor(duration) {
-    super(duration);
+    super(duration, 'fireRate');
   }
 
   apply(target) {

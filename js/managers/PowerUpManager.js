@@ -11,7 +11,7 @@ export class PowerUpManager {
    */
   static shouldSpawn(powerUps, lastSpawnTime) {
     if (powerUps.length >= POWERUP_MAX_COUNT) return false;
-    return Date.now() - lastSpawnTime >= POWERUP_SPAWN_INTERVAL;
+    return performance.now() - lastSpawnTime >= POWERUP_SPAWN_INTERVAL;
   }
 
   /**

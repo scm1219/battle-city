@@ -17,6 +17,9 @@ export class AudioManager {
     this._bgmTimer = null;
     this._bgmPlaying = false;
     this._initialized = false;
+    // 缓存旋律数据，避免每次循环重新创建
+    this._melody = null;
+    this._bass = null;
   }
 
   /**
@@ -29,6 +32,9 @@ export class AudioManager {
     this._bgmGain.gain.value = this.bgmVolume;
     this._bgmGain.connect(this.ctx.destination);
     this._initialized = true;
+    // 一次性缓存旋律数据
+    this._melody = this._createMelody();
+    this._bass = this._createBass();
     this.playBGM();
   }
 
@@ -87,8 +93,8 @@ export class AudioManager {
     const beatDuration = 60 / AUDIO_BGM_BPM; // 每拍时长（秒）
 
     // FC 风格旋律：两声部（方波主旋律 + 三角波低音）
-    const melody = this._createMelody();
-    const bass = this._createBass();
+    const melody = this._melody;
+    const bass = this._bass;
 
     let totalBeats = 0;
 

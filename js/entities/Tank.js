@@ -92,13 +92,6 @@ export class Tank extends Entity {
   }
 
   /**
-   * 停止移动
-   */
-  stop() {
-    this.speed = 0;
-  }
-
-  /**
    * 检查与障碍物的碰撞（共享方法）
    */
   checkCollision(obstacles) {

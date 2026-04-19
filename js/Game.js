@@ -12,10 +12,13 @@ import { SpawnManager } from './managers/SpawnManager.js';
 import { MapGenerator } from './managers/MapGenerator.js';
 import { AudioManager } from './managers/AudioManager.js';
 import { PowerUpManager } from './managers/PowerUpManager.js';
-import { COLORS, SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, BENCHMARK_DURATION, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
+import { COLORS, SCORE_PER_ENEMY, SCORE_PER_HEAVY, SCORE_PER_FAST, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
 import { rectIntersect } from './utils/helpers.js';
 
 export class Game {
+  static SCOREBOARD_KEY = 'tank_scoreboard';
+  static MAX_PARTICLES = 200;
+
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
@@ -39,7 +42,7 @@ export class Game {
     this.powerUps = [];
 
     // 道具生成计时
-    this.lastPowerUpSpawnTime = Date.now();
+    this.lastPowerUpSpawnTime = performance.now();
 
     // 管理器
     this.input = new InputManager();
@@ -127,7 +130,7 @@ export class Game {
     this.powerUps = [];
 
     // 重置道具生成计时
-    this.lastPowerUpSpawnTime = Date.now();
+    this.lastPowerUpSpawnTime = performance.now();
 
     // 重置状态
     this.score = 0;
@@ -146,29 +149,21 @@ export class Game {
   }
 
   /**
-   * 开始游戏（先运行基准测试）
+   * 开始游戏（预热渲染管线后显示开始画面）
    */
   async start() {
     this.showBenchmarkScreen();
-    const medianFrameTime = await this.runBenchmark();
-    const fps = Math.round(1000 / medianFrameTime);
-
-    console.log(`[Benchmark] 帧间隔: ${medianFrameTime.toFixed(2)}ms, 帧率: ~${fps}fps, 速度缩放: ${(TARGET_FRAME_TIME / medianFrameTime).toFixed(3)}`);
-
-    // 显示等待开始画面
+    // 用 rAF 预热浏览器渲染管线，让首帧更稳定
+    await this.warmup();
     this.showStartScreen();
   }
 
   /**
-   * 显示基准测试画面
+   * 显示预热画面
    */
   showBenchmarkScreen() {
     this.ctx.fillStyle = COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    this.ctx.fillStyle = COLORS.TEXT;
-    this.ctx.font = '20px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('正在校准...', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
   }
 
   /**
@@ -185,6 +180,8 @@ export class Game {
     this.ctx.font = 'bold 36px monospace';
     this.ctx.fillText('坦克大战', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
 
+    // 取消可能存在的旧闪烁循环
+    if (this._blinkRafId) cancelAnimationFrame(this._blinkRafId);
     // 闪烁提示
     this._startScreenBlink();
   }
@@ -207,37 +204,19 @@ export class Game {
     this.ctx.textAlign = 'center';
     this.ctx.fillText('按 任意键 开始游戏', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 
-    requestAnimationFrame(() => this._startScreenBlink());
+    this._blinkRafId = requestAnimationFrame(() => this._startScreenBlink());
   }
 
   /**
-   * 运行基准测试，返回中位数帧间隔
+   * 预热渲染管线（空跑 rAF 几帧让浏览器稳定）
    */
-  runBenchmark() {
+  warmup() {
     return new Promise((resolve) => {
-      const samples = [];
-      let prevTime = performance.now();
-      const startTime = prevTime;
-
-      const tick = (now) => {
-        const dt = now - prevTime;
-        prevTime = now;
-
-        // 忽略异常帧（如切标签页后的第一帧）
-        if (dt > 0 && dt < 100) {
-          samples.push(dt);
-        }
-
-        if (now - startTime < BENCHMARK_DURATION) {
-          requestAnimationFrame(tick);
-        } else {
-          // 取中位数帧间隔
-          samples.sort((a, b) => a - b);
-          const median = samples[Math.floor(samples.length / 2)];
-          resolve(median);
-        }
+      let count = 0;
+      const tick = () => {
+        if (++count >= 10) resolve();
+        else requestAnimationFrame(tick);
       };
-
       requestAnimationFrame(tick);
     });
   }
@@ -303,8 +282,8 @@ export class Game {
       this.bullets.push(new Bullet(bullet.x, bullet.y, bullet.direction, bullet.owner));
     }
 
-    // 生成敌人
-    if (this.spawnManager.shouldSpawn()) {
+    // 生成敌人（同屏上限 4 个，致敬经典 FC 版）
+    if (this.enemies.length < 6 && this.spawnManager.shouldSpawn()) {
       const spawnPos = this.spawnManager.spawnEnemy(this.enemies);
       if (spawnPos) {
         const roll = Math.random();
@@ -344,7 +323,7 @@ export class Game {
       const powerUp = PowerUpManager.createPowerUp(this.obstacles, this.player, this.enemies);
       if (powerUp) {
         this.powerUps.push(powerUp);
-        this.lastPowerUpSpawnTime = Date.now();
+        this.lastPowerUpSpawnTime = performance.now();
       }
     }
 
@@ -391,7 +370,7 @@ export class Game {
               obstacle.x + obstacle.width / 2,
               obstacle.y + obstacle.height / 2
             );
-            this.particles.push(...particles);
+            this.addParticles(particles);
 
             if (obstacle.isBase()) {
               // 基地被摧毁，游戏结束
@@ -427,7 +406,7 @@ export class Game {
             enemy.x + enemy.width / 2,
             enemy.y + enemy.height / 2
           );
-          this.particles.push(...particles);
+          this.addParticles(particles);
           this.audio.playExplosion();
         }
       }
@@ -453,7 +432,7 @@ export class Game {
           this.player.x + this.player.width / 2,
           this.player.y + this.player.height / 2
         );
-        this.particles.push(...particles);
+        this.addParticles(particles);
         this.audio.playExplosion();
 
         // 玩家死亡，等待爆炸结束后再结束游戏
@@ -467,7 +446,7 @@ export class Game {
       const midX = (a.x + b.x) / 2 + a.width / 2;
       const midY = (a.y + b.y) / 2 + a.height / 2;
       const particles = Particle.createSmallExplosion(midX, midY);
-      this.particles.push(...particles);
+      this.addParticles(particles);
     }
 
     // 玩家 vs 敌人（碰撞）- 仅阻挡，不判负
@@ -476,6 +455,15 @@ export class Game {
     if (CollisionManager.checkEnemyBase(this.enemies, this.obstacles)) {
       this.endGame();
     }
+  }
+
+  /**
+   * 安全添加粒子（受上限约束）
+   */
+  addParticles(newParticles) {
+    const available = Game.MAX_PARTICLES - this.particles.length;
+    if (available <= 0) return;
+    this.particles.push(...newParticles.slice(0, available));
   }
 
   /**
@@ -560,7 +548,11 @@ export class Game {
    * 结束游戏
    */
   endGame() {
+    // 防止重复调用（如 dying 粒子清空 + 基地同时被摧毁）
+    if (this.gameOver) return;
+
     this.gameOver = true;
+    this.dying = false;
     this.gameRunning = false;
     this.audio.stopBGM();
     this.finalScoreElement.textContent = this.score;
@@ -627,7 +619,7 @@ export class Game {
    * 保存得分到 localStorage，最多保留 20 条
    */
   saveScore(score) {
-    const STORAGE_KEY = 'tank_scoreboard';
+    const STORAGE_KEY = Game.SCOREBOARD_KEY;
     const MAX_ENTRIES = 20;
 
     const now = new Date();
@@ -652,7 +644,7 @@ export class Game {
    * 渲染历史得分榜
    */
   renderScoreboard() {
-    const STORAGE_KEY = 'tank_scoreboard';
+    const STORAGE_KEY = Game.SCOREBOARD_KEY;
     const RANK_LABELS = ['1st', '2nd', '3rd'];
     const MAX_ROWS = 20;
 
