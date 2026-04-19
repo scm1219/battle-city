@@ -220,15 +220,15 @@ export class AudioManager {
   // ===== 音效 =====
 
   /**
-   * 播放爆炸音效（白噪声 + 低频轰鸣）
+   * 播放敌方坦克被击毁音效（短促明亮，白噪声 + 中频衰减）
    */
-  playExplosion() {
+  playEnemyExplosion() {
     if (!this._initialized || !this.sfxEnabled) return;
 
     const now = this.ctx.currentTime;
     const duration = AUDIO_EXPLOSION_DURATION;
 
-    // 白噪声层 - 模拟爆炸的嘶嘶声
+    // 白噪声层 - 短促爆裂感
     const bufferSize = this.ctx.sampleRate * duration;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -243,11 +243,11 @@ export class AudioManager {
     noiseGain.gain.setValueAtTime(this.sfxVolume * 0.4, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
-    // 带通滤波 - 让噪声更像爆炸而非纯白噪声
+    // 带通滤波 - 中高频，模拟金属碎裂
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.value = 800;
-    filter.Q.value = 0.5;
+    filter.frequency.value = 1200;
+    filter.Q.value = 0.7;
 
     noise.connect(filter);
     filter.connect(noiseGain);
@@ -255,20 +255,91 @@ export class AudioManager {
     noise.start(now);
     noise.stop(now + duration);
 
-    // 低频轰鸣层 - 模拟爆炸的冲击感
+    // 中频下滑音 - 模拟金属碎片飞溅
     const osc = this.ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(150, now);
-    osc.frequency.exponentialRampToValueAtTime(30, now + duration);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + duration * 0.6);
 
     const oscGain = this.ctx.createGain();
-    oscGain.gain.setValueAtTime(this.sfxVolume * 0.3, now);
+    oscGain.gain.setValueAtTime(this.sfxVolume * 0.2, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.6);
+
+    osc.connect(oscGain);
+    oscGain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  /**
+   * 播放玩家被击毁音效（低沉厚重，长时间轰鸣）
+   */
+  playPlayerExplosion() {
+    if (!this._initialized || !this.sfxEnabled) return;
+
+    const now = this.ctx.currentTime;
+    const duration = AUDIO_EXPLOSION_DURATION * 2; // 玩家爆炸持续时间翻倍
+
+    // 白噪声层 - 厚重的爆裂
+    const bufferSize = this.ctx.sampleRate * duration;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1);
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(this.sfxVolume * 0.6, now);
+    noiseGain.gain.setValueAtTime(this.sfxVolume * 0.6, now + 0.1);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    // 低通滤波 - 沉闷轰鸣
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(600, now);
+    filter.frequency.exponentialRampToValueAtTime(200, now + duration);
+    filter.Q.value = 1.0;
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration);
+
+    // 低频轰鸣层 - 冲击感
+    const osc = this.ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.exponentialRampToValueAtTime(20, now + duration);
+
+    const oscGain = this.ctx.createGain();
+    oscGain.gain.setValueAtTime(this.sfxVolume * 0.4, now);
     oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
     osc.connect(oscGain);
     oscGain.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + duration);
+
+    // 二次冲击波 - 延迟 0.15 秒的低频脉冲
+    const osc2 = this.ctx.createOscillator();
+    osc2.type = 'sine';
+    const delay = 0.15;
+    osc2.frequency.setValueAtTime(80, now + delay);
+    osc2.frequency.exponentialRampToValueAtTime(15, now + delay + duration * 0.5);
+
+    const osc2Gain = this.ctx.createGain();
+    osc2Gain.gain.setValueAtTime(0.001, now);
+    osc2Gain.gain.setValueAtTime(this.sfxVolume * 0.3, now + delay);
+    osc2Gain.gain.exponentialRampToValueAtTime(0.001, now + delay + duration * 0.5);
+
+    osc2.connect(osc2Gain);
+    osc2Gain.connect(this.ctx.destination);
+    osc2.start(now);
+    osc2.stop(now + delay + duration * 0.5);
   }
 
   // ===== 暂停/恢复 =====

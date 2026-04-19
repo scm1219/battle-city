@@ -407,7 +407,7 @@ export class Game {
             enemy.y + enemy.height / 2
           );
           this.addParticles(particles);
-          this.audio.playExplosion();
+          this.audio.playEnemyExplosion();
         }
       }
     }
@@ -433,7 +433,7 @@ export class Game {
           this.player.y + this.player.height / 2
         );
         this.addParticles(particles);
-        this.audio.playExplosion();
+        this.audio.playPlayerExplosion();
 
         // 玩家死亡，等待爆炸结束后再结束游戏
       }
