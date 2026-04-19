@@ -128,31 +128,47 @@ body {
 
 /* ===== 前三名庆祝效果 ===== */
 
-/* 基础前三名样式：金色边框 + 发光 */
-.game-over.top-3 {
-  border-color: #FFD700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
-  animation: top3Glow 1.5s ease-in-out infinite alternate;
-}
-
-.game-over.top-3 h2 {
-  color: #FFD700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
-}
-
-.game-over.top-3 .final-score span {
-  color: #FFD700;
-}
-
-/* 第一名额外效果：标题加皇冠 + 更强发光 */
+/* 第一名：金色 */
 .game-over.top-1 {
   border-color: #FFD700;
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 215, 0, 0.3);
+  animation: goldGlow 1.5s ease-in-out infinite alternate;
 }
+.game-over.top-1 h2 {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+.game-over.top-1 h2::before { content: '👑 '; }
+.game-over.top-1 .final-score span { color: #FFD700; }
+.game-over.top-1 .congrats-text { color: #FFD700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.6); }
 
-.game-over.top-1 h2::before {
-  content: '👑 ';
+/* 第二名：银色 */
+.game-over.top-2 {
+  border-color: #C0C0C0;
+  box-shadow: 0 0 25px rgba(192, 192, 192, 0.5), 0 0 50px rgba(192, 192, 192, 0.25);
+  animation: silverGlow 1.5s ease-in-out infinite alternate;
 }
+.game-over.top-2 h2 {
+  color: #C0C0C0;
+  text-shadow: 0 0 10px rgba(192, 192, 192, 0.7), 0 0 20px rgba(192, 192, 192, 0.3);
+}
+.game-over.top-2 h2::before { content: '🥈 '; }
+.game-over.top-2 .final-score span { color: #C0C0C0; }
+.game-over.top-2 .congrats-text { color: #C0C0C0; text-shadow: 0 0 8px rgba(192, 192, 192, 0.5); }
+
+/* 第三名：铜色 */
+.game-over.top-3:not(.top-1):not(.top-2) {
+  border-color: #CD7F32;
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.4), 0 0 40px rgba(205, 127, 50, 0.2);
+  animation: bronzeGlow 1.5s ease-in-out infinite alternate;
+}
+.game-over.top-3:not(.top-1):not(.top-2) h2 {
+  color: #CD7F32;
+  text-shadow: 0 0 10px rgba(205, 127, 50, 0.7), 0 0 20px rgba(205, 127, 50, 0.3);
+}
+.game-over.top-3:not(.top-1):not(.top-2) h2::before { content: '🥉 '; }
+.game-over.top-3:not(.top-1):not(.top-2) .final-score span { color: #CD7F32; }
+.game-over.top-3:not(.top-1):not(.top-2) .congrats-text { color: #CD7F32; text-shadow: 0 0 8px rgba(205, 127, 50, 0.5); }
 
 /* 烟花粒子容器 */
 .celebration-particles {
@@ -174,9 +190,19 @@ body {
   animation: fireworkBurst 1.2s ease-out forwards;
 }
 
-@keyframes top3Glow {
-  from { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3), 0 0 30px rgba(255, 215, 0, 0.15); }
-  to { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5), 0 0 50px rgba(255, 215, 0, 0.25); }
+@keyframes goldGlow {
+  from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2); }
+  to { box-shadow: 0 0 35px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 215, 0, 0.3); }
+}
+
+@keyframes silverGlow {
+  from { box-shadow: 0 0 15px rgba(192, 192, 192, 0.3), 0 0 30px rgba(192, 192, 192, 0.15); }
+  to { box-shadow: 0 0 25px rgba(192, 192, 192, 0.5), 0 0 50px rgba(192, 192, 192, 0.25); }
+}
+
+@keyframes bronzeGlow {
+  from { box-shadow: 0 0 12px rgba(205, 127, 50, 0.3), 0 0 25px rgba(205, 127, 50, 0.15); }
+  to { box-shadow: 0 0 20px rgba(205, 127, 50, 0.45), 0 0 40px rgba(205, 127, 50, 0.2); }
 }
 
 @keyframes fireworkBurst {
