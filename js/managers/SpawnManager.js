@@ -1,6 +1,6 @@
 // 敌人生成管理器
 import { SPAWN_POINTS, SPAWN_INTERVAL_INITIAL, SPAWN_INTERVAL_MIN, GRID_SIZE, TANK_SIZE } from '../utils/constants.js';
-import { randomInt } from '../utils/helpers.js';
+import { randomInt, rectIntersect } from '../utils/helpers.js';
 
 export class SpawnManager {
   constructor() {
@@ -25,20 +25,34 @@ export class SpawnManager {
 
   /**
    * 生成敌人
-   * @param {Array} enemies - 当前敌人列表，用于检查生成点拥挤度
+   * @param {Array} enemies - 当前敌人列表
+   * @param {Object|null} player - 玩家对象，用于避免生成在玩家身上
    */
-  spawnEnemy(enemies = []) {
+  spawnEnemy(enemies = [], player = null) {
     // 更新难度（随时间缩短生成间隔）
     this.updateDifficulty();
 
-    // 统计每个生成点附近的敌人数量
+    // 用精确碰撞检测筛选可用生成点
     const availablePoints = SPAWN_POINTS.filter(point => {
       const px = point.x * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
       const py = point.y * GRID_SIZE + (GRID_SIZE - TANK_SIZE) / 2;
-      const nearby = enemies.filter(e =>
-        Math.abs(e.x - px) < GRID_SIZE && Math.abs(e.y - py) < GRID_SIZE
-      );
-      return nearby.length < 2;
+      const spawnBounds = { x: px, y: py, width: TANK_SIZE, height: TANK_SIZE };
+
+      // 检查与现有敌人的碰撞
+      for (const e of enemies) {
+        if (rectIntersect(spawnBounds, e.getBounds())) {
+          return false;
+        }
+      }
+
+      // 检查与玩家的碰撞
+      if (player && !player.markedForDeletion) {
+        if (rectIntersect(spawnBounds, player.getBounds())) {
+          return false;
+        }
+      }
+
+      return true;
     });
 
     if (availablePoints.length === 0) return null;

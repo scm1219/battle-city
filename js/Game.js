@@ -242,9 +242,9 @@ export class Game {
       this.bullets.push(new Bullet(bullet.x, bullet.y, bullet.direction, bullet.owner));
     }
 
-    // 生成敌人（同屏上限 4 个，致敬经典 FC 版）
+    // 生成敌人（同屏上限 6 个，致敬经典 FC 版）
     if (this.enemies.length < 6 && this.spawnManager.shouldSpawn()) {
-      const spawnPos = this.spawnManager.spawnEnemy(this.enemies);
+      const spawnPos = this.spawnManager.spawnEnemy(this.enemies, this.player);
       if (spawnPos) {
         const roll = Math.random();
         let enemy;

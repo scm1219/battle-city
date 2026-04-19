@@ -86,7 +86,7 @@ export const POWERUP_SIZE = 32;                          // 道具尺寸
 export const POWERUP_TYPES = ['speed', 'fireRate', 'shield']; // 道具类型
 export const POWERUP_SPAWN_INTERVAL = 8000;              // 道具生成间隔（毫秒）
 export const POWERUP_LIFETIME = 45000;                   // 道具存在时间（毫秒）
-export const POWERUP_MAX_COUNT = 3;                      // 同时存在的最大道具数
+export const POWERUP_MAX_COUNT = 2;                      // 同时存在的最大道具数
 export const POWERUP_EFFECT_DURATION = 45000;            // 道具效果持续时间（毫秒）
 export const POWERUP_BLINK_START = 5000;                 // 消失前闪烁开始时间（毫秒）
 
