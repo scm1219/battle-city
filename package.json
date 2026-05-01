@@ -4,8 +4,8 @@
   "private": true,
   "description": "经典 FC 风格网页坦克大战游戏",
   "scripts": {
-    "dev": "serve . -l 8080",
-    "start": "serve . -l 8080"
+    "dev": "serve . -l 8080 --no-request-logging",
+    "start": "serve . -l 8080 --no-request-logging"
   },
   "devDependencies": {
     "serve": "^14.2.6"
