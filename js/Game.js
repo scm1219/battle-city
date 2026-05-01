@@ -15,7 +15,7 @@ import { AudioManager } from './managers/AudioManager.js';
 import { PowerUpManager } from './managers/PowerUpManager.js';
 import { ScoreManager } from './managers/ScoreManager.js';
 import { UIManager } from './managers/UIManager.js';
-import { COLORS, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE } from './utils/constants.js';
+import { COLORS, CANVAS_WIDTH, CANVAS_HEIGHT, TARGET_FRAME_TIME, GRID_SIZE, GRID_COUNT, HEAVY_ENEMY_CHANCE, FAST_ENEMY_CHANCE, TANK_SIZE, AUDIO_BGM_TRACKS, AUDIO_BGM_INTENSE_TRIGGER_TIME } from './utils/constants.js';
 import { rectIntersect } from './utils/helpers.js';
 
 export class Game {
@@ -317,6 +317,9 @@ export class Game {
     // 更新敌人数量UI
     this.ui.updateEnemyCount(this.enemies.length);
 
+    // BGM 场景自动切换
+    this.updateBGM();
+
     // 检测游戏结束
     this.checkGameOver();
   }
@@ -506,6 +509,29 @@ export class Game {
   }
 
   /**
+   * 根据游戏状态自动切换 BGM
+   */
+  updateBGM() {
+    const hasBoss = this.enemies.some(e => e instanceof BossEnemy);
+    const currentTrack = this.audio.getCurrentTrack();
+
+    if (hasBoss) {
+      // Boss 出现 → Boss 战 BGM
+      if (currentTrack !== AUDIO_BGM_TRACKS.BOSS) {
+        this.audio.switchBGM(AUDIO_BGM_TRACKS.BOSS);
+      }
+    } else if (this.gameTime >= AUDIO_BGM_INTENSE_TRIGGER_TIME) {
+      // 难度升级（90s+）且无 Boss → 激烈 BGM
+      if (currentTrack !== AUDIO_BGM_TRACKS.INTENSE) {
+        this.audio.switchBGM(AUDIO_BGM_TRACKS.INTENSE);
+      }
+    } else if (currentTrack !== AUDIO_BGM_TRACKS.NORMAL) {
+      // 默认 → 经典 BGM（Boss 被击毁后若时间未到 90s 也会回落）
+      this.audio.switchBGM(AUDIO_BGM_TRACKS.NORMAL);
+    }
+  }
+
+  /**
    * 检测游戏结束
    */
   checkGameOver() {
@@ -550,6 +576,7 @@ export class Game {
     this.ui.resetGameOver();
 
     this.init();
+    this.audio.switchBGM(AUDIO_BGM_TRACKS.NORMAL);
     this.audio.playBGM();
     this.start();
   }
