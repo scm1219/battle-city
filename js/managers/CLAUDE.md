@@ -64,10 +64,14 @@
 - `static createPowerUp(obstacles, player, enemies)` -> `PowerUp | null` -- 创建随机类型道具
 
 ### AudioManager -- `AudioManager.js`
-- `init()` -- 初始化 Web Audio 上下文（需用户交互后调用）
+- `init()` -- 初始化 Web Audio 上下文（需用户交互后调用），预缓存 3 首曲目数据
 - `playBGM()` / `stopBGM()` / `pause()` / `resume()` / `toggleBGM()` -- BGM 控制
+- `switchBGM(trackId)` -- 平滑切换到指定曲目（淡出/淡入过渡，防竞争）
+- `getCurrentTrack()` -> `number` -- 获取当前播放曲目编号
 - `playEnemyExplosion()` / `playPlayerExplosion()` -- 播放爆炸音效
 - 使用 Web Audio API 程序化合成 FC 风格旋律，零外部音频文件
+- 内置 3 首曲目：经典战斗（C 大调 160BPM）、激烈战斗（A 小调 180BPM）、Boss 战（E 小调 200BPM + 锯齿波和声）
+- 由 `Game.updateBGM()` 根据游戏状态自动切换（Boss 出现、时间 90s+）
 
 ### ScoreManager -- `ScoreManager.js`
 - `constructor(killElements, scoreboardList)` -- 接收击杀统计 DOM 元素与排行榜列表容器
@@ -126,7 +130,7 @@
 | `SpawnManager.js` | ~82 | 敌人生成调度与难度曲线 |
 | `MapGenerator.js` | ~120 | 随机地图生成 |
 | `PowerUpManager.js` | ~87 | 道具生成调度（纯静态方法） |
-| `AudioManager.js` | ~200 | 程序化 BGM 与音效合成 |
+| `AudioManager.js` | ~380 | 程序化多曲目 BGM 与音效合成 |
 | `ScoreManager.js` | ~125 | 分数统计与排行榜持久化 |
 | `UIManager.js` | ~228 | UI 显示控制与庆祝动画 |
 
@@ -134,6 +138,7 @@
 
 | 日期 | 操作 | 说明 |
 |------|------|------|
+| 2026-05-01 | BGM 系统重构 | AudioManager 支持多曲目切换（经典/激烈/Boss 战），新增 switchBGM/getCurrentTrack 接口，行数 ~200→~380 |
 | 2026-04-19 | 增量更新 | 新增 ScoreManager/UIManager 接口描述；更新 PowerUpManager 为纯静态方法；新增 CollisionManager.checkPlayerPowerUp；更新文件清单与行数 |
 | 2026-04-19 | 同步文档与代码 | 新增 PowerUpManager/AudioManager，更新生成点/地图参数 |
 | 2026-04-04 | 初始化 AI 上下文 | 首次生成模块文档 |
